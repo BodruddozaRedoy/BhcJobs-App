@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { router } from "expo-router";
+import { router, usePathname } from "expo-router";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -82,8 +82,19 @@ function IconCircle({
  */
 export function AppHeader() {
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
   const { isAuthenticated, isRestoring } = useAuth();
   const { isDark, toggle } = useTheme();
+
+  // Route groups in parentheses are stripped from the URL, so `app/(auth)/login.tsx`
+  // is simply `/login`.
+  const onLogin = pathname === "/login";
+
+  // The guest button always offers the screen you are *not* on: "Sign Up" while
+  // signing in, "Sign In" while registering. Anywhere else it points at sign-in.
+  const guestAction = onLogin
+    ? { label: "Sign Up", go: () => router.replace("/(auth)/register") }
+    : { label: "Sign In", go: () => router.replace("/(auth)/login") };
 
   return (
     <View
@@ -109,11 +120,11 @@ export function AppHeader() {
             </IconCircle>
           ) : (
             <Button
-              label="Sign In"
+              label={guestAction.label}
               size="sm"
               variant="ghost"
               className="border-brand border"
-              onPress={() => router.push("/(auth)/login")}
+              onPress={guestAction.go}
             />
           )}
 

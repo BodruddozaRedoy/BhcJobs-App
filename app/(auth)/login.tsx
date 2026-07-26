@@ -112,11 +112,10 @@ export default function LoginScreen() {
 
         <View className="flex-row items-center justify-center">
           <Text className="text-sm text-content dark:text-content-dark">New to BhcJobs.com? </Text>
-          <Link
-            href="/(auth)/register"
-            className="text-sm font-semibold text-brand dark:text-brand-dark"
-          >
-            Create an account
+          <Link href="/(auth)/register" asChild>
+            <Text className="text-sm font-semibold text-brand dark:text-brand-dark">
+              Create an account
+            </Text>
           </Link>
         </View>
       </View>
