@@ -1,0 +1,82 @@
+import { Ionicons } from "@expo/vector-icons";
+import { forwardRef, useState } from "react";
+import { Pressable, Text, TextInput, View, type TextInputProps } from "react-native";
+
+import { Brand, Colors } from "@/constants/colors";
+
+export interface InputProps extends Omit<TextInputProps, "className"> {
+  label?: string;
+  /** Ionicons name rendered inside the field, on the left. */
+  icon?: keyof typeof Ionicons.glyphMap;
+  /** Validation message. Its presence is what puts the field in its error state. */
+  error?: string;
+  /** Renders a show/hide toggle and masks the value until toggled. */
+  secure?: boolean;
+  containerClassName?: string;
+}
+
+/**
+ * Labelled text field with an optional leading icon, an error state, and a
+ * password reveal toggle.
+ *
+ * `forwardRef` is required so a form can call `.focus()` on the next field when
+ * the user hits "next" on the keyboard.
+ */
+export const Input = forwardRef<TextInput, InputProps>(function Input(
+  { label, icon, error, secure = false, containerClassName = "", editable = true, ...props },
+  ref,
+) {
+  const [revealed, setRevealed] = useState(false);
+  const hasError = Boolean(error);
+
+  return (
+    <View className={containerClassName}>
+      {label ? (
+        <Text className="mb-2 text-sm font-semibold text-content dark:text-content-dark">
+          {label}
+        </Text>
+      ) : null}
+
+      <View
+        className={`h-14 flex-row items-center rounded-xl border bg-white px-4 dark:bg-element-dark ${
+          hasError
+            ? "border-red-400"
+            : "border-slate-200 dark:border-slate-700"
+        } ${editable ? "" : "opacity-60"}`}
+      >
+        {icon ? (
+          <Ionicons name={icon} size={20} color={Brand.DEFAULT} style={{ marginRight: 12 }} />
+        ) : null}
+
+        <TextInput
+          ref={ref}
+          editable={editable}
+          // Masked unless the user has explicitly revealed it.
+          secureTextEntry={secure && !revealed}
+          placeholderTextColor={Colors.light.textSecondary}
+          // Announce the error to screen readers; `accessibilityLabel` alone would
+          // read the label but not why the field is rejected.
+          accessibilityLabel={label}
+          accessibilityHint={error}
+          className="flex-1 text-base text-content dark:text-content-dark"
+          {...props}
+        />
+
+        {secure ? (
+          <Pressable
+            onPress={() => setRevealed((current) => !current)}
+            accessibilityRole="button"
+            accessibilityLabel={revealed ? "Hide password" : "Show password"}
+            // Enlarges the touch target beyond the 20px glyph without affecting layout.
+            hitSlop={12}
+          >
+            <Ionicons name={revealed ? "eye-off" : "eye"} size={20} color={Brand.DEFAULT} />
+          </Pressable>
+        ) : null}
+      </View>
+
+      {/* Rendered only when present, so fields do not reserve empty vertical space. */}
+      {hasError ? <Text className="mt-1.5 text-xs text-red-500">{error}</Text> : null}
+    </View>
+  );
+});

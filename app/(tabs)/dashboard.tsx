@@ -1,10 +1,13 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import { Text } from "react-native";
+
+import { AppScreen } from "@/components/layout/AppScreen";
 
 export default function DashboardScreen() {
   return (
-    <View>
-      <Text>DashboardScreen</Text>
-    </View>
-  )
+    <AppScreen center>
+      <Text className="text-base font-semibold text-content dark:text-content-dark">
+        DashboardScreen
+      </Text>
+    </AppScreen>
+  );
 }

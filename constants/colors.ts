@@ -33,4 +33,13 @@ export const Brand = {
   dark: '#2563eb',
 } as const;
 
+/**
+ * Multi-stop gradients, typed as the tuple `expo-linear-gradient` expects (at
+ * least two stops). Kept here so the auth screens cannot drift apart.
+ */
+export const Gradients = {
+  /** Diagonal blue → near-white wash behind the sign-in and register cards. */
+  auth: ['#93c5fd', '#dbeafe', '#f8fafc'],
+} as const satisfies Record<string, readonly [string, string, ...string[]]>;
+
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;

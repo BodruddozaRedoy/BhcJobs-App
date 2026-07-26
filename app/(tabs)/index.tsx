@@ -1,9 +1,11 @@
-import { Text, View } from "react-native";
+import { Text } from "react-native";
+
+import { AppScreen } from "@/components/layout/AppScreen";
 
 export default function HomeScreen() {
   return (
-    <View className="flex-1 items-center justify-center bg-background dark:bg-background-dark">
+    <AppScreen scroll center>
       <Text className="text-2xl font-bold text-brand dark:text-brand-dark">HomeScreen</Text>
-    </View>
+    </AppScreen>
   );
 }

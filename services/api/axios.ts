@@ -107,23 +107,56 @@ const extractMessage = (body: unknown, fallback: string): string => {
   return fallback;
 };
 
-/** Laravel returns `{ errors: { phone: ['...'] } }` on validation failure. */
+/**
+ * Extracts per-field validation errors.
+ *
+ * This backend puts them under `error` (singular) rather than Laravel's usual
+ * `errors`, e.g.
+ *   { "status": false, "error": { "phone": ["The phone field is required."] } }
+ * Both spellings are accepted so a backend fix later does not break the app.
+ */
 const extractFieldErrors = (body: unknown): Record<string, string[]> | undefined => {
   if (!body || typeof body !== "object") return undefined;
 
-  const { errors } = body as { errors?: unknown };
-  if (!errors || typeof errors !== "object") return undefined;
+  const { error, errors } = body as { error?: unknown; errors?: unknown };
+  const bag = [error, errors].find((value) => value && typeof value === "object");
 
-  return errors as Record<string, string[]>;
+  return bag as Record<string, string[]> | undefined;
 };
 
 api.interceptors.response.use(
   (response) => {
+    const route = `${response.config.method?.toUpperCase()} ${response.config.url}`;
+    const duration = elapsedMs(response.config as TimedRequest);
+    const body: unknown = response.data;
+
+    // This API signals failure with HTTP 200 and `status: false` in the body —
+    // a rejected login, a validation error and a success all arrive as 2xx. So
+    // the envelope is inspected here and turned into the same ApiError that a
+    // real HTTP error produces; without this, a wrong password would flow
+    // through to the caller looking like a successful login.
+    if (body && typeof body === "object" && (body as { status?: unknown }).status === false) {
+      const fieldErrors = extractFieldErrors(body);
+      const message = extractMessage(
+        body,
+        fieldErrors ? "Please check the highlighted fields." : "That request could not be completed.",
+      );
+
+      logger.error(`← ✗ ${response.status} ${route} (${duration}) [client] ${message}`, body);
+
+      return Promise.reject(
+        new ApiError({
+          kind: "client",
+          message,
+          status: response.status,
+          fieldErrors,
+          raw: body,
+        }),
+      );
+    }
+
     // ← 200 GET /api/job/get (312ms)
-    logger.info(
-      `← ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url}` +
-        ` (${elapsedMs(response.config as TimedRequest)})`,
-    );
+    logger.info(`← ${response.status} ${route} (${duration})`);
 
     return response;
   },
