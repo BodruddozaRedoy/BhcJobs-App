@@ -35,6 +35,25 @@ interface TimedRequest extends InternalAxiosRequestConfig {
 const REDACTED_KEYS = ["password", "password_confirmation", "token", "otp"];
 
 /**
+ * Absolute URL for a request, so a log line can be pasted straight into curl or a
+ * browser. `config.url` alone is only the path.
+ *
+ * `api.getUri` is used rather than string concatenation because it also appends
+ * serialised query params — which is what makes the list endpoints
+ * (`/api/job/get?page=2`) legible. It is wrapped defensively: a logging helper must
+ * never be the reason a request fails.
+ */
+const fullUrl = (config?: InternalAxiosRequestConfig): string => {
+  if (!config) return "?";
+
+  try {
+    return api.getUri(config);
+  } catch {
+    return `${config.baseURL ?? ""}${config.url ?? ""}`;
+  }
+};
+
+/**
  * Replaces sensitive values with `***` so credentials never appear in logs.
  * Only the top level is walked — request bodies here are flat form payloads.
  */
@@ -62,9 +81,9 @@ api.interceptors.request.use(
       config.headers.set("Authorization", `Bearer ${authToken}`);
     }
 
-    // → POST /api/job_seeker/login { phone: '017...', password: '***' }
-    logger.info(
-      `→ ${config.method?.toUpperCase()} ${config.url}`,
+    // → POST https://dev.bhcjobs.com/api/job_seeker/login { phone: '017…', password: '***' }
+    logger.request(
+      `→ ${config.method?.toUpperCase()} ${fullUrl(config)}`,
       config.data ? redact(config.data) : "",
     );
 
@@ -126,7 +145,7 @@ const extractFieldErrors = (body: unknown): Record<string, string[]> | undefined
 
 api.interceptors.response.use(
   (response) => {
-    const route = `${response.config.method?.toUpperCase()} ${response.config.url}`;
+    const route = `${response.config.method?.toUpperCase()} ${fullUrl(response.config)}`;
     const duration = elapsedMs(response.config as TimedRequest);
     const body: unknown = response.data;
 
@@ -155,8 +174,8 @@ api.interceptors.response.use(
       );
     }
 
-    // ← 200 GET /api/job/get (312ms)
-    logger.info(`← ${response.status} ${route} (${duration})`);
+    // ← 200 GET https://dev.bhcjobs.com/api/job/get (312ms)
+    logger.success(`← ${response.status} ${route} (${duration})`);
 
     return response;
   },
@@ -177,7 +196,7 @@ api.interceptors.response.use(
 
     const axiosError = error as AxiosError;
     const config = axiosError.config as TimedRequest | undefined;
-    const route = `${config?.method?.toUpperCase() ?? "?"} ${config?.url ?? "?"}`;
+    const route = `${config?.method?.toUpperCase() ?? "?"} ${fullUrl(config)}`;
     const status = axiosError.response?.status;
     const body = axiosError.response?.data;
 
@@ -208,7 +227,7 @@ api.interceptors.response.use(
       message = extractMessage(body, "Something went wrong. Please try again.");
     }
 
-    // ← ✗ 422 POST /api/job_seeker/register (188ms) [client] Please check…
+    // ← ✗ 422 POST https://dev.bhcjobs.com/api/job_seeker/register (188ms) [client] Please check…
     logger.error(
       `← ✗ ${status ?? axiosError.code ?? "no response"} ${route}` +
         ` (${elapsedMs(config)}) [${kind}] ${message}`,

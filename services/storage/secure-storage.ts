@@ -12,7 +12,7 @@ export const getSecret = async (key: SecureKey): Promise<string | null> => {
   try {
     return await SecureStore.getItemAsync(key, OPTIONS);
   } catch (error) {
-    logger.warn(
+    logger.error(
       `[secure-store] read failed for "${key}"; treating as absent`,
       error,
     );
@@ -36,7 +36,7 @@ export const deleteSecret = async (key: SecureKey): Promise<void> => {
     await SecureStore.deleteItemAsync(key, OPTIONS);
   } catch (error) {
     // Deleting a key that is already gone is the desired end state either way.
-    logger.warn(`[secure-store] delete failed for "${key}"`, error);
+    logger.error(`[secure-store] delete failed for "${key}"`, error);
   }
 };
 

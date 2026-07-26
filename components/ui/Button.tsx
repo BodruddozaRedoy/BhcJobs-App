@@ -1,7 +1,7 @@
 import { ActivityIndicator, Pressable, Text, View, type PressableProps } from "react-native";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost";
-export type ButtonSize = "md" | "lg";
+export type ButtonSize = "sm" | "md" | "lg";
 
 export interface ButtonProps extends Omit<PressableProps, "children" | "style"> {
   label: string;
@@ -28,8 +28,16 @@ const LABEL: Record<ButtonVariant, string> = {
 };
 
 const SIZE: Record<ButtonSize, string> = {
+  sm: "h-9 px-3.5",
   md: "h-11 px-4",
   lg: "h-14 px-5",
+};
+
+/** Label scales with the container so a small button does not look cramped. */
+const LABEL_SIZE: Record<ButtonSize, string> = {
+  sm: "text-sm",
+  md: "text-base",
+  lg: "text-base",
 };
 
 /**
@@ -73,7 +81,9 @@ export function Button({
       ) : (
         <>
           {icon ? <View className="mr-2">{icon}</View> : null}
-          <Text className={`text-base font-bold tracking-wide ${LABEL[variant]}`}>{label}</Text>
+          <Text className={`font-bold tracking-wide ${LABEL_SIZE[size]} ${LABEL[variant]}`}>
+            {label}
+          </Text>
         </>
       )}
     </Pressable>

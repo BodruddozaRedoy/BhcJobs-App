@@ -9,7 +9,7 @@ import { AppScreen } from "@/components/layout/AppScreen";
  */
 export default function RegisterScreen() {
   return (
-    <AppScreen gradient center edges={["top", "bottom"]} statusBarStyle="dark">
+    <AppScreen gradient center edges={["bottom"]}>
       <Text className="text-base font-semibold text-content dark:text-content-dark">
         Registration coming next
       </Text>

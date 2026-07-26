@@ -14,7 +14,7 @@ import { useLogin } from "@/hooks/feature/auth/use-login";
 const MAX_CARD_WIDTH = 420;
 
 export default function LoginScreen() {
-  const { form, isSubmitting, formError, onSubmit } = useLogin();
+  const { form, isSubmitting, onSubmit } = useLogin();
   const { width } = useWindowDimensions();
 
   // Card takes the full width minus gutters on phones, and caps out on tablets
@@ -27,10 +27,10 @@ export default function LoginScreen() {
       scroll
       center
       keyboardAvoiding
-      // Standalone screen: no tab bar below, so both edges need insetting.
-      edges={["top", "bottom"]}
-      // Dark glyphs, because the gradient is light at every stop.
-      statusBarStyle="dark"
+      // AppHeader owns the top inset; no tab bar below, so the bottom is ours.
+      edges={["bottom"]}
+      // Status bar sits over AppHeader now, not the gradient, and the header
+      // follows the theme — so `auto` (the default) is correct here.
       contentClassName="py-10"
     >
       <View
@@ -102,13 +102,10 @@ export default function LoginScreen() {
           Forgot Your Password?
         </Text>
 
-        {/* Failures that belong to the request as a whole rather than one field. */}
-        {formError ? (
-          <View accessibilityLiveRegion="polite" className="mb-4 rounded-lg bg-red-50 px-3 py-2.5">
-            <Text className="text-sm text-red-600">{formError}</Text>
-          </View>
-        ) : null}
-
+        {/*
+          Request-level failures (bad credentials, offline) surface as a toast from
+          `useLogin`, not inline — only per-field errors render next to their input.
+        */}
         <Button label="SIGN IN" onPress={onSubmit} loading={isSubmitting} />
 
         <Divider label="OR" className="my-6" />

@@ -49,7 +49,7 @@ export const getObject = <T>(key: string): T | undefined => {
   try {
     return JSON.parse(raw) as T;
   } catch (error) {
-    logger.warn(`[mmkv] discarding unparseable value at "${key}"`, error);
+    logger.error(`[mmkv] discarding unparseable value at "${key}"`, error);
     storage.remove(key);
     return undefined;
   }
