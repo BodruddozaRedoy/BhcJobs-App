@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/ui": "~57.0.7",
+    "axios": "^1.18.1",
     "babel-preset-expo": "^57.0.4",
     "expo": "~57.0.8",
     "expo-constants": "~57.0.7",
