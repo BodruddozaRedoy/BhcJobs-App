@@ -1,23 +1,10 @@
 import { Platform } from 'react-native';
 
-export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
-} as const;
-
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+// The palette lives in `constants/colors.ts` so `tailwind.config.ts` can read it
+// without pulling in react-native. Re-exported here to keep `@/constants/theme`
+// the one import site for theme values.
+export { Brand, Colors } from './colors';
+export type { ThemeColor } from './colors';
 
 export const Fonts = Platform.select({
   ios: {
