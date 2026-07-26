@@ -2,10 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { forwardRef, useState } from "react";
 import { Pressable, Text, TextInput, View, type TextInputProps } from "react-native";
 
+import { FieldLabel } from "@/components/ui/FieldLabel";
 import { Brand, Colors } from "@/constants/colors";
 
 export interface InputProps extends Omit<TextInputProps, "className"> {
   label?: string;
+  /** Marks the label with a red asterisk and announces the field as required. */
+  required?: boolean;
   /** Ionicons name rendered inside the field, on the left. */
   icon?: keyof typeof Ionicons.glyphMap;
   /** Validation message. Its presence is what puts the field in its error state. */
@@ -23,7 +26,16 @@ export interface InputProps extends Omit<TextInputProps, "className"> {
  * the user hits "next" on the keyboard.
  */
 export const Input = forwardRef<TextInput, InputProps>(function Input(
-  { label, icon, error, secure = false, containerClassName = "", editable = true, ...props },
+  {
+    label,
+    required = false,
+    icon,
+    error,
+    secure = false,
+    containerClassName = "",
+    editable = true,
+    ...props
+  },
   ref,
 ) {
   const [revealed, setRevealed] = useState(false);
@@ -31,11 +43,7 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
 
   return (
     <View className={containerClassName}>
-      {label ? (
-        <Text className="mb-2 text-sm font-semibold text-content dark:text-content-dark">
-          {label}
-        </Text>
-      ) : null}
+      {label ? <FieldLabel required={required}>{label}</FieldLabel> : null}
 
       <View
         className={`h-14 flex-row items-center rounded-xl border bg-white px-4 dark:bg-element-dark ${
@@ -58,6 +66,8 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
           // read the label but not why the field is rejected.
           accessibilityLabel={label}
           accessibilityHint={error}
+          // Conveys "required" to assistive tech, which cannot see the asterisk.
+          aria-required={required}
           className="flex-1 text-base text-content dark:text-content-dark"
           {...props}
         />

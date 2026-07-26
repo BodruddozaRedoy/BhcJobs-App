@@ -1,5 +1,11 @@
 import { logger } from "@/lib/logger";
-import type { LoginPayload, LoginResponse, Session } from "@/types/auth.types";
+import type {
+  LoginPayload,
+  LoginResponse,
+  RegisterPayload,
+  RegisterResponse,
+  Session,
+} from "@/types/auth.types";
 
 import { post } from "./client";
 import { ENDPOINTS } from "./endpoints";
@@ -43,3 +49,22 @@ export const login = async (payload: LoginPayload): Promise<Session> => {
     user: body.user ?? body.data?.user,
   };
 };
+
+/**
+ * Creates a job seeker account. The backend responds by sending an OTP to `phone`;
+ * the account is not usable until that code is confirmed via `PHONE_VERIFY`.
+ *
+ * Values are normalised here rather than in the form so the wire format is
+ * consistent no matter which screen calls this: passport upper-cased (the API
+ * accepts either case, but storing one form avoids duplicate-looking records) and
+ * email lower-cased and trimmed.
+ *
+ * Resolves only on success — the response interceptor rejects `{ status: false }`
+ * bodies even though they arrive as HTTP 200.
+ */
+export const register = async (payload: RegisterPayload): Promise<RegisterResponse> =>
+  post<RegisterResponse>(ENDPOINTS.REGISTER, {
+    ...payload,
+    email: payload.email.trim().toLowerCase(),
+    passport_number: payload.passport_number.trim().toUpperCase(),
+  });

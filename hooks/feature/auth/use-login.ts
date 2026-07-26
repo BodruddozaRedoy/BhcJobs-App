@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 
 import { useAuth } from "@/context/AuthProvider";
 import { useToast } from "@/context/ToastProvider";
+import { applyFieldErrors } from "@/lib/forms/apply-field-errors";
 import { loginSchema, type LoginFormValues } from "@/lib/validation/auth.schema";
 import { login } from "@/services/api/auth.api";
 import { isApiError } from "@/services/api/types";
@@ -54,22 +55,11 @@ export function useLogin() {
           return;
         }
 
-        const fieldErrors = error.fieldErrors;
-        let attachedToField = false;
-
-        if (fieldErrors) {
-          for (const field of FORM_FIELDS) {
-            const messages = fieldErrors[field];
-            if (messages?.length) {
-              form.setError(field, { type: "server", message: messages[0] });
-              attachedToField = true;
-            }
-          }
-        }
+        const applied = applyFieldErrors(form, error.fieldErrors, FORM_FIELDS);
 
         // Only toast when nothing landed on a field, so the user is not told the
         // same thing twice in two places.
-        if (!attachedToField) toast.error(error.message);
+        if (!applied) toast.error(error.message);
       }
     },
     [form, signIn, toast],

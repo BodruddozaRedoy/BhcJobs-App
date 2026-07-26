@@ -4,6 +4,42 @@ export interface LoginPayload {
   password: string;
 }
 
+/**
+ * Payload for `POST /api/job_seeker/register`.
+ *
+ * Snake_case throughout because these are the exact keys the API validates; a
+ * camelCase rename here would silently produce "field is required" errors.
+ */
+export interface RegisterPayload {
+  name: string;
+  phone: string;
+  email: string;
+  password: string;
+  confirm_password: string;
+  /** Two letters + seven digits, e.g. `AB1234567`. */
+  passport_number: string;
+  /** ISO calendar date, `YYYY-MM-DD`. */
+  dob: string;
+  gender: string;
+}
+
+/**
+ * Body of a successful registration.
+ *
+ * Unverified in shape: completing a real registration would have sent an OTP to a
+ * live phone number, so only the failure paths were exercised. Treated as
+ * best-effort — the flow relies on `status`, which the interceptor already checks,
+ * rather than on any field below.
+ */
+export interface RegisterResponse {
+  status?: boolean;
+  message?: string;
+  data?: {
+    id?: number;
+    phone?: string;
+  };
+}
+
 /** The authenticated job seeker, as returned alongside a successful login. */
 export interface JobSeeker {
   id: number;
