@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Bhcjobs",
-    "slug": "Bhcjobs",
+    "name": "BhcJobs",
+    "slug": "bhcjobs",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
