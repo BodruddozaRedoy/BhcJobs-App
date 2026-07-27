@@ -44,8 +44,9 @@
 
 ## State Management
 
-- [x] Choose state management — React Context (`AuthProvider`, `ThemeProvider`, `ToastProvider`) + feature hooks
+- [x] Choose state management — TanStack Query for server state; React Context (`AuthProvider`, `ThemeProvider`, `ToastProvider`) for client state
 - [x] Setup API layer — `services/api/` (axios instance, interceptors, typed clients)
+- [x] Caching — in-memory query cache, 5-minute `staleTime`, request deduplication
 - [x] Global loading state — `AuthProvider.isRestoring` for session rehydration; per-section states via `useAsyncList`
 
 ---
@@ -298,7 +299,7 @@ Display:
 # 11. Code Quality
 
 - [x] Reusable components
-- [x] Custom hooks — `useAsyncList`, `useCountdown`, one hook per feature
+- [x] Custom hooks — `useAsyncList` (adapter over `useQuery`), `useCountdown`, one hook per feature
 - [x] API service separation — `services/api/{axios,client,endpoints,*.api}.ts`
 - [x] Constants — `constants/{config,colors,theme}.ts`
 - [x] Types — one file per domain in `types/`
@@ -343,17 +344,24 @@ Landing
 
 Login
 
-- [ ] Validation
-- [ ] Success
-- [ ] Invalid credentials
-- [ ] Network error
+- [x] Validation
+- [x] Success
+- [x] Invalid credentials
+- [x] Network error
 
 Registration
 
-- [ ] Validation
-- [ ] Register
-- [ ] OTP received
-- [ ] Phone verification
+- [x] Validation
+- [x] Register
+- [x] OTP received
+- [x] Phone verification
+
+> ⚠️ **Re-check the six auth rows above.** They were signed off before the auth hooks
+> moved to `useMutation`. Validation is untouched (it still runs in
+> `form.handleSubmit`, ahead of the request), and the success/error branches were
+> moved across verbatim — but the submit path itself is new code, and the button's
+> busy flag now comes from `isPending` rather than `formState.isSubmitting`. The
+> landing rows are unaffected.
 
 ---
 
@@ -402,6 +410,17 @@ Ordered by what blocks submission.
 1. **Generate a release APK** — `npx expo run:android --variant release` or `eas build -p android --profile preview`.
 2. **Manual QA pass** — walk the auth half of §14 on a device and tick it off.
 3. **Check the layout on a tablet** (§12).
+
+## Done — TanStack Query (2026-07-27)
+
+- Added `@tanstack/react-query` 5.101 with an **in-memory** cache (no disk persistence, per the chosen scope) — `services/query-client.ts`, mounted in `app/_layout.tsx` above the navigator so the cache outlives any single screen.
+- `useAsyncList` is now a thin adapter over `useQuery` rather than its own fetching implementation. React Query owns caching, deduplication, retry and cancellation; the hook maps its flags onto the existing four-state union, so **the three sections did not change at all**.
+- The state ordering encodes two behaviours worth keeping: `data` is checked before `error`, so a failed background refresh keeps the rows on screen instead of replacing a readable list; and `isFetching` is checked before `error`, so retrying after a failure shows the skeleton again rather than the error being retried.
+- Defaults chosen deliberately: 5-minute `staleTime` (these lists change on a human timescale), 30-minute `gcTime`, `refetchOnWindowFocus` off (no window in React Native, and there is an explicit pull-to-refresh), and a retry predicate that honours `ApiError.isRetryable` — the stock "retry everything 3×" turns a 404 into three round trips before the user is told anything.
+- Query keys live in one file (`services/api/query-keys.ts`); two spellings of a key mean two cache entries and no deduplication.
+- Auth moved to `useMutation` (`use-login`, `use-register`, `use-verify-otp`). `isSubmitting` is now `isPending`, and because React Query awaits an async `onSuccess`, the sign-in button keeps its spinner until the token is actually written to secure storage rather than clearing when the response lands. Mutations never auto-retry — a replayed register could double-submit.
+
+**Not yet verified on device.** The phone was disconnected before I could run it. Static checks (`typecheck`, `lint`, `format:check`) and an Android bundle all pass, but nothing here has been seen running.
 
 ## Done — loading, refresh and empty polish (2026-07-27)
 

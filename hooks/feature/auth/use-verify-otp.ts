@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 
 import { useAuth } from "@/context/AuthProvider";
@@ -35,45 +35,44 @@ export function useVerifyOtp(phone: string) {
     defaultValues: { otp: "" },
   });
 
-  const submit = useCallback(
-    async (values: OtpFormValues) => {
-      try {
-        const session = await verifyPhone({ phone, otp: values.otp });
+  const { mutate, isPending } = useMutation({
+    mutationFn: (values: OtpFormValues) => verifyPhone({ phone, otp: values.otp }),
+    // Awaited before `isPending` clears, so the button stays busy until the session
+    // is stored rather than clearing the moment the response arrives.
+    onSuccess: async (session) => {
+      if (session) {
+        // The backend signed the user in as part of verification, so there is no
+        // reason to make them type their password immediately afterwards.
+        await signIn(session);
+        toast.success("Phone verified. You are signed in.");
+        router.replace("/(tabs)");
+        return;
+      }
 
-        if (session) {
-          // The backend signed the user in as part of verification, so there is no
-          // reason to make them type their password immediately afterwards.
-          await signIn(session);
-          toast.success("Phone verified. You are signed in.");
-          router.replace("/(tabs)");
-          return;
-        }
+      toast.success("Phone verified. Please sign in.");
+      router.replace("/(auth)/login");
+    },
+    onError: (error) => {
+      if (!isApiError(error)) {
+        toast.error("Something went wrong. Please try again.");
+        return;
+      }
 
-        toast.success("Phone verified. Please sign in.");
-        router.replace("/(auth)/login");
-      } catch (error) {
-        if (!isApiError(error)) {
-          toast.error("Something went wrong. Please try again.");
-          return;
-        }
+      const applied = applyFieldErrors(form, error.fieldErrors, FORM_FIELDS);
 
-        const applied = applyFieldErrors(form, error.fieldErrors, FORM_FIELDS);
-
-        // A rejected code arrives as a plain message ("Account not found! Please
-        // register first..", or a wrong-OTP message) with no field bag. Putting it on
-        // the input is more useful than a toast that disappears while the user is
-        // still looking at the boxes.
-        if (!applied) {
-          form.setError("otp", { type: "server", message: error.message });
-        }
+      // A rejected code arrives as a plain message ("Account not found! Please
+      // register first..", or a wrong-OTP message) with no field bag. Putting it on
+      // the input is more useful than a toast that disappears while the user is
+      // still looking at the boxes.
+      if (!applied) {
+        form.setError("otp", { type: "server", message: error.message });
       }
     },
-    [form, phone, signIn, toast],
-  );
+  });
 
   return {
     form,
-    isSubmitting: form.formState.isSubmitting,
-    onSubmit: form.handleSubmit(submit),
+    isSubmitting: isPending,
+    onSubmit: form.handleSubmit((values: OtpFormValues) => mutate(values)),
   };
 }

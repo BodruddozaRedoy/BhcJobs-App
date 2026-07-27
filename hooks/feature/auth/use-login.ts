@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 
 import { useAuth } from "@/context/AuthProvider";
@@ -37,38 +37,39 @@ export function useLogin() {
     defaultValues: { phone: "", password: "" },
   });
 
-  const submit = useCallback(
-    async (values: LoginFormValues) => {
-      try {
-        const session = await login(values);
-        await signIn(session);
+  const { mutate, isPending } = useMutation({
+    mutationFn: login,
+    // Awaited by React Query before `isPending` clears, so the button keeps its
+    // spinner until the token is actually on disk — not just until the response
+    // lands.
+    onSuccess: async (session) => {
+      await signIn(session);
 
-        toast.success("Signed in successfully");
+      toast.success("Signed in successfully");
 
-        // `replace`, not `push` — the back gesture must not return to the login
-        // screen once authenticated. The toast outlives the navigation because it
-        // is mounted at the root, above the navigator.
-        router.replace("/(tabs)");
-      } catch (error) {
-        if (!isApiError(error)) {
-          toast.error("Something went wrong. Please try again.");
-          return;
-        }
-
-        const applied = applyFieldErrors(form, error.fieldErrors, FORM_FIELDS);
-
-        // Only toast when nothing landed on a field, so the user is not told the
-        // same thing twice in two places.
-        if (!applied) toast.error(error.message);
-      }
+      // `replace`, not `push` — the back gesture must not return to the login
+      // screen once authenticated. The toast outlives the navigation because it
+      // is mounted at the root, above the navigator.
+      router.replace("/(tabs)");
     },
-    [form, signIn, toast],
-  );
+    onError: (error) => {
+      if (!isApiError(error)) {
+        toast.error("Something went wrong. Please try again.");
+        return;
+      }
+
+      const applied = applyFieldErrors(form, error.fieldErrors, FORM_FIELDS);
+
+      // Only toast when nothing landed on a field, so the user is not told the
+      // same thing twice in two places.
+      if (!applied) toast.error(error.message);
+    },
+  });
 
   return {
     form,
     /** True while the request is in flight — drives the button spinner. */
-    isSubmitting: form.formState.isSubmitting,
-    onSubmit: form.handleSubmit(submit),
+    isSubmitting: isPending,
+    onSubmit: form.handleSubmit((values: LoginFormValues) => mutate(values)),
   };
 }

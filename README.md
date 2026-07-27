@@ -51,6 +51,7 @@ The app covers the job-seeker landing experience and the full authentication flo
 - **Dark mode** — a complete light/dark palette, following the system colour scheme.
 - **Form validation** — [zod](https://zod.dev) schemas resolved through [react-hook-form](https://react-hook-form.com), validating on blur. Server-side per-field errors are merged into the same form state, so a message like "The phone has already been taken" lands on the phone input rather than in a toast.
 - **Typed API layer** — a single axios instance with request/response interceptors that normalise every failure into one `ApiError` shape (`network` / `timeout` / `client` / `server` / `invalid_response` / `unknown`).
+- **Cached server state** — TanStack Query keeps the landing lists for five minutes, deduplicates concurrent requests for the same list, and only retries failures that could plausibly succeed. The cache is in memory, so a cold start still fetches.
 - **Global toasts** for request-level success and failure.
 - **Dev-only request logging** — formatted request/response blocks with timings and redacted credential headers, compiled out of release builds.
 - **Responsive layout** — fluid widths with a max-width cap on the auth cards, safe-area aware, keyboard-avoiding.
@@ -59,20 +60,21 @@ The app covers the job-seeker landing experience and the full authentication flo
 
 ## Tech Stack
 
-| Area       | Choice                                                                                              |
-| ---------- | --------------------------------------------------------------------------------------------------- |
-| Framework  | [Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/), React Native 0.86, React 19, React Compiler |
-| Language   | TypeScript (`strict`)                                                                               |
-| Navigation | [expo-router](https://docs.expo.dev/router/introduction/) (file-based, typed routes)                |
-| Styling    | [NativeWind 4](https://www.nativewind.dev) (Tailwind CSS for React Native)                          |
-| Forms      | react-hook-form + zod via `@hookform/resolvers`                                                     |
-| HTTP       | axios, with interceptors for auth, logging and error normalisation                                  |
-| State      | React Context (`AuthProvider`, `ThemeProvider`, `ToastProvider`) + feature hooks                    |
-| Storage    | `expo-secure-store` (tokens), `react-native-mmkv` (non-sensitive state)                             |
-| Images     | `expo-image`                                                                                        |
-| Animation  | `react-native-reanimated`, `react-native-svg`                                                       |
-| Linting    | ESLint 9 (flat config, `eslint-config-expo`)                                                        |
-| Formatting | Prettier 3 + `prettier-plugin-tailwindcss`                                                          |
+| Area         | Choice                                                                                              |
+| ------------ | --------------------------------------------------------------------------------------------------- |
+| Framework    | [Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/), React Native 0.86, React 19, React Compiler |
+| Language     | TypeScript (`strict`)                                                                               |
+| Navigation   | [expo-router](https://docs.expo.dev/router/introduction/) (file-based, typed routes)                |
+| Styling      | [NativeWind 4](https://www.nativewind.dev) (Tailwind CSS for React Native)                          |
+| Forms        | react-hook-form + zod via `@hookform/resolvers`                                                     |
+| HTTP         | axios, with interceptors for auth, logging and error normalisation                                  |
+| Server state | [TanStack Query 5](https://tanstack.com/query) — in-memory cache, dedup, retry policy               |
+| Client state | React Context (`AuthProvider`, `ThemeProvider`, `ToastProvider`)                                    |
+| Storage      | `expo-secure-store` (tokens), `react-native-mmkv` (non-sensitive state)                             |
+| Images       | `expo-image`                                                                                        |
+| Animation    | `react-native-reanimated`, `react-native-svg`                                                       |
+| Linting      | ESLint 9 (flat config, `eslint-config-expo`)                                                        |
+| Formatting   | Prettier 3 + `prettier-plugin-tailwindcss`                                                          |
 
 ---
 
@@ -268,8 +270,10 @@ lib/
 └─ logger.ts                dev-only logging (no-op outside __DEV__)
 
 services/
-├─ api/                     axios instance, interceptors, request helpers, per-domain clients
+├─ api/                     axios instance, interceptors, request helpers, per-domain
+│                           clients, query keys
 ├─ storage/                 secure-store and MMKV wrappers, storage keys
+├─ query-client.ts          TanStack Query cache and default options
 └─ session.ts               start / restore / end a session
 
 types/                      auth, user, job, company, industry
@@ -283,7 +287,13 @@ types/                      auth, user, job, company, industry
 
 **One state field, four states.** `useAsyncList` models list loading as a discriminated union (`loading | ready | empty | error`) rather than separate `isLoading` / `error` / `data` booleans, so a render cannot express "loading and errored". It also aborts in-flight requests on unmount and exposes a `retry` that is only surfaced when the failure is actually retryable.
 
-**`retry` and `refresh` are different operations.** `retry` restarts from `loading` and is for the button on a failed section, where there is nothing on screen to preserve. `refresh` backs pull-to-refresh: it returns a promise so the caller can hold the spinner for exactly as long as the work takes, leaves the current items visible, and on failure keeps them rather than throwing away a readable list because a background refresh timed out.
+**`useAsyncList` adapts TanStack Query, it does not fetch.** React Query owns the cache, deduplication, retry policy and cancellation; the hook maps its several flags onto the one state field above. Keeping that union is what lets a section stay a short `switch` instead of re-deriving "is this really empty, or just not loaded yet?" at three call sites. The branch order encodes two deliberate behaviours: `data` is checked before `error`, so a failed background refresh keeps the rows on screen rather than replacing a readable list; and `isFetching` is checked before `error`, so retrying after a failure shows the skeleton again instead of the error the user just acted on.
+
+**`retry` and `refresh` are different operations.** `retry` is for the button on a failed section, where there is nothing on screen to preserve. `refresh` backs pull-to-refresh: it returns a promise so the caller can hold the spinner for exactly as long as the work takes, and leaves the current items visible throughout.
+
+**Cache defaults are chosen, not inherited.** 5-minute `staleTime` (industries, jobs and companies change on a human timescale), 30-minute `gcTime`, `refetchOnWindowFocus` off — there is no window to focus in React Native, and the home screen offers an explicit pull. The retry predicate honours `ApiError.isRetryable`, because the stock "retry everything three times" turns a 404 into three round trips before the user is told anything. Mutations never auto-retry: a replayed registration could double-submit.
+
+**Auth runs through `useMutation`.** Because React Query awaits an async `onSuccess`, the sign-in button keeps its spinner until the token is actually written to secure storage, not merely until the response arrives.
 
 **The home screen owns its three lists.** Sections used to fetch their own data, which left no way to refresh them together or know when they had all settled. The screen holds the three `AsyncList`s and passes them down; the sections are presentational.
 

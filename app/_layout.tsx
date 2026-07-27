@@ -1,3 +1,4 @@
+import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
@@ -6,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider } from "@/context/AuthProvider";
 import { ThemeProvider } from "@/context/ThemeProvider";
 import { ToastProvider } from "@/context/ToastProvider";
+import { queryClient } from "@/services/query-client";
 
 import "../global.css";
 
@@ -23,6 +25,10 @@ import "../global.css";
  * `KeyboardProvider` installs the native keyboard-frame listeners that
  * `AppScreen`'s keyboard handling reads. It has to be mounted once at the root —
  * without it those components silently do nothing.
+ *
+ * `QueryClientProvider` wraps `AuthProvider` because the auth mutations run inside
+ * it, and sits above the navigator so the cache outlives any single screen — which
+ * is what makes returning to the home tab paint from cache instead of refetching.
  */
 export default function RootLayout() {
   return (
@@ -35,9 +41,11 @@ export default function RootLayout() {
               sign-out) can raise a toast too.
             */}
             <ToastProvider>
-              <AuthProvider>
-                <Stack screenOptions={{ headerShown: false }} />
-              </AuthProvider>
+              <QueryClientProvider client={queryClient}>
+                <AuthProvider>
+                  <Stack screenOptions={{ headerShown: false }} />
+                </AuthProvider>
+              </QueryClientProvider>
             </ToastProvider>
           </ThemeProvider>
         </SafeAreaProvider>
