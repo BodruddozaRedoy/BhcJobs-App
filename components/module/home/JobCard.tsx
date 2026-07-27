@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
@@ -73,8 +74,20 @@ function Tag({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: str
   );
 }
 
-/** One posting in the "Recommended Jobs" list. */
-export function JobCard({ job, onView, onApply, onToggleSave, saved = false }: JobCardProps) {
+/**
+ * One posting in the "Recommended Jobs" list.
+ *
+ * The heaviest of the three cards — a logo, two derived currency lines, tags and two
+ * buttons — and the one that benefits most from memoising, since expanding the list
+ * rebuilds every element while the eight already rendered are unchanged.
+ */
+export const JobCard = memo(function JobCard({
+  job,
+  onView,
+  onApply,
+  onToggleSave,
+  saved = false,
+}: JobCardProps) {
   const logo = companyImageUrl(job.company?.image);
   const salary = salaryLine(job);
   const food = foodLine(job);
@@ -186,4 +199,4 @@ export function JobCard({ job, onView, onApply, onToggleSave, saved = false }: J
       </View>
     </View>
   );
-}
+});

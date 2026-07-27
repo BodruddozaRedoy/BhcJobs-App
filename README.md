@@ -58,20 +58,20 @@ The app covers the job-seeker landing experience and the full authentication flo
 
 ## Tech Stack
 
-| Area       | Choice                                                                               |
-| ---------- | ------------------------------------------------------------------------------------ |
-| Framework  | [Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/), React Native 0.86, React 19  |
-| Language   | TypeScript (`strict`)                                                                |
-| Navigation | [expo-router](https://docs.expo.dev/router/introduction/) (file-based, typed routes) |
-| Styling    | [NativeWind 4](https://www.nativewind.dev) (Tailwind CSS for React Native)           |
-| Forms      | react-hook-form + zod via `@hookform/resolvers`                                      |
-| HTTP       | axios, with interceptors for auth, logging and error normalisation                   |
-| State      | React Context (`AuthProvider`, `ThemeProvider`, `ToastProvider`) + feature hooks     |
-| Storage    | `expo-secure-store` (tokens), `react-native-mmkv` (non-sensitive state)              |
-| Images     | `expo-image`                                                                         |
-| Animation  | `react-native-reanimated`, `react-native-svg`                                        |
-| Linting    | ESLint 9 (flat config, `eslint-config-expo`)                                         |
-| Formatting | Prettier 3 + `prettier-plugin-tailwindcss`                                           |
+| Area       | Choice                                                                                              |
+| ---------- | --------------------------------------------------------------------------------------------------- |
+| Framework  | [Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/), React Native 0.86, React 19, React Compiler |
+| Language   | TypeScript (`strict`)                                                                               |
+| Navigation | [expo-router](https://docs.expo.dev/router/introduction/) (file-based, typed routes)                |
+| Styling    | [NativeWind 4](https://www.nativewind.dev) (Tailwind CSS for React Native)                          |
+| Forms      | react-hook-form + zod via `@hookform/resolvers`                                                     |
+| HTTP       | axios, with interceptors for auth, logging and error normalisation                                  |
+| State      | React Context (`AuthProvider`, `ThemeProvider`, `ToastProvider`) + feature hooks                    |
+| Storage    | `expo-secure-store` (tokens), `react-native-mmkv` (non-sensitive state)                             |
+| Images     | `expo-image`                                                                                        |
+| Animation  | `react-native-reanimated`, `react-native-svg`                                                       |
+| Linting    | ESLint 9 (flat config, `eslint-config-expo`)                                                        |
+| Formatting | Prettier 3 + `prettier-plugin-tailwindcss`                                                          |
 
 ---
 
@@ -288,6 +288,10 @@ types/                      auth, user, job, company, industry
 
 **Sensitive data goes to the keychain.** Tokens live in `expo-secure-store`; MMKV holds only non-sensitive state.
 
+**Loading, empty and error share one visual slot.** `Loader`, `EmptyView` and `ErrorView` carry the same padding and muted type, so a section does not jump as it moves between states. `ErrorView` takes `canRetry` and hides its button when a retry is certain to fail again.
+
+**The React Compiler is on** (`experiments.reactCompiler`), so components are auto-memoised internally and manual `useMemo`/`useCallback` are mostly unnecessary. The three card components are still wrapped in `React.memo`, which the compiler does not do: that adds the props comparison at the component boundary, letting already-visible cards skip re-rendering when a "show more" toggle rebuilds the list. This only works because the sections forward their handlers unwrapped — an inline arrow at a call site would switch it off silently.
+
 ---
 
 ## Scripts
@@ -308,7 +312,6 @@ types/                      auth, user, job, company, industry
 ## Known Issues
 
 - The jobs, search, dashboard and profile tabs are placeholders; the industry and company filter params passed from the landing page are not yet read.
-- The card components are not wrapped in `React.memo`.
 - No skeleton loaders or pull-to-refresh yet.
 - Tablet and landscape layouts have not been verified.
 - Only a debug APK has been produced so far.

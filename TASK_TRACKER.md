@@ -287,7 +287,7 @@ Display:
 # 10. Performance
 
 - [ ] FlatList — deliberately not used: the home screen is one vertical `ScrollView` and the list endpoints are unpaginated, so a nested vertical `FlatList` would warn and lose virtualisation anyway. Sections cap at 8 items with a "show more" toggle. Revisit if the API adds pagination.
-- [ ] Memoized components — cards are not wrapped in `React.memo`
+- [x] Memoized components — `JobCard`, `IndustryCard` and `CompanyCard` wrapped in `React.memo`, on top of the React Compiler's automatic memoisation
 - [x] useCallback
 - [x] useMemo
 - [x] Optimized image rendering — `expo-image` with caching
@@ -401,9 +401,15 @@ Ordered by what blocks submission.
 
 1. **Generate a release APK** — `npx expo run:android --variant release` or `eas build -p android --profile preview`.
 2. **Manual QA pass** — walk §14 on a device and tick it off.
-3. **Memoize the card components** — `React.memo` on `JobCard`, `IndustryCard`, `CompanyCard` (§10).
-4. **Bonus polish** — skeleton loaders, pull-to-refresh, richer empty states (§13).
-5. **Check the layout on a tablet** (§12).
+3. **Bonus polish** — skeleton loaders, pull-to-refresh, richer empty states (§13).
+4. **Check the layout on a tablet** (§12).
+
+## Done — memoised cards (2026-07-27)
+
+- Wrapped `JobCard`, `IndustryCard` and `CompanyCard` in `React.memo`, keeping the same export names so no call site changed.
+- The payoff is the "show more" toggle. Flipping `expanded` re-runs each section's `.map()` and builds a fresh element for every card; memo lets the cards already on screen skip re-rendering instead of rebuilding all of them to reveal the ones below. `JobCard` gains the most — it derives two currency lines, a date and a logo URL on every render.
+- Verified the props are actually stable, since memo is worthless otherwise: all three sections pass the item straight from the fetched array and forward `onSelect`/`onView`/`onApply` unwrapped, so nothing is rebuilt inline at the call site. Noted in each component's docstring, because an inline arrow added later would silently switch the memo off.
+- Note: `app.json` sets `experiments.reactCompiler: true` and `babel-plugin-react-compiler@1.0.0` is installed, so components are already auto-memoised internally. The compiler does not add a props-comparison at the component boundary, which is exactly what these `memo` calls contribute — the two are complementary, not redundant.
 
 ## Done — shared state components (2026-07-27)
 

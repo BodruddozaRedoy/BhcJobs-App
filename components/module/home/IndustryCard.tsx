@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { industryImageUrl } from "@/lib/media";
@@ -16,8 +17,14 @@ export interface IndustryCardProps {
  *
  * A fixed height rather than one driven by content, so the two columns stay level
  * when one name wraps to two lines and its neighbour does not.
+ *
+ * Memoised for the "show more" toggle: expanding re-runs the grid's `.map()` and so
+ * builds a fresh element for every card, but the eight already on screen have
+ * unchanged props and skip re-rendering. `industry` comes straight from the fetched
+ * array and `onPress` is passed through unwrapped, so the shallow compare holds —
+ * building either inline at the call site would defeat this.
  */
-export function IndustryCard({ industry, onPress }: IndustryCardProps) {
+export const IndustryCard = memo(function IndustryCard({ industry, onPress }: IndustryCardProps) {
   const source = industryImageUrl(industry.image);
 
   return (
@@ -60,4 +67,4 @@ export function IndustryCard({ industry, onPress }: IndustryCardProps) {
       </Text>
     </Pressable>
   );
-}
+});

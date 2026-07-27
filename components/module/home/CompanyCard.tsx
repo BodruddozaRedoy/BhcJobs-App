@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { memo } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { companyImageUrl } from "@/lib/media";
@@ -24,8 +25,12 @@ export interface CompanyCardProps {
  * The logo sits in a circular ring rather than being cropped to a circle: these are
  * wordmarks of wildly different aspect ratios, and `cover`-cropping "JABCO" or "BHC"
  * into a circle would cut the letters off.
+ *
+ * Memoised for the same reason as `IndustryCard`: expanding the grid rebuilds every
+ * element, and the cards already on screen should not re-render to show the ones
+ * below them.
  */
-export function CompanyCard({ company, onPress }: CompanyCardProps) {
+export const CompanyCard = memo(function CompanyCard({ company, onPress }: CompanyCardProps) {
   const logo = companyImageUrl(company.image);
 
   return (
@@ -75,4 +80,4 @@ export function CompanyCard({ company, onPress }: CompanyCardProps) {
       </Text>
     </Pressable>
   );
-}
+});
