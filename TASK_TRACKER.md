@@ -319,12 +319,12 @@ Display:
 
 # 13. Optional Bonus
 
-- [ ] Skeleton loaders — spinner + message instead
-- [x] Fade animations — Toast enter/exit, animated banner wave
-- [ ] Pull to refresh — `AppScreen` accepts a `refreshControl`, but the home screen does not pass one
+- [x] Skeleton loaders — `Skeleton` primitive plus per-section placeholders shaped like the real cards
+- [x] Fade animations — Toast enter/exit, animated banner wave, pulsing skeletons
+- [x] Pull to refresh — refreshes all three sections at once, keeping current items on screen
 - [x] Dark mode — full light/dark palette via `ThemeProvider` + NativeWind `dark:` variants
-- [ ] Better empty state — plain text, no illustration
-- [x] Better error UI — kind-aware message plus a "Try again" button only when a retry could succeed
+- [x] Better empty state — icon in a tinted disc, headline and a hint line
+- [x] Better error UI — kind-aware message, offline icon, and a "Try again" button only when a retry could succeed
 - [x] Secure session storage — token in `expo-secure-store`, non-sensitive state in MMKV
 - [x] Global toast system
 
@@ -400,9 +400,27 @@ Registration
 Ordered by what blocks submission.
 
 1. **Generate a release APK** — `npx expo run:android --variant release` or `eas build -p android --profile preview`.
-2. **Manual QA pass** — walk §14 on a device and tick it off.
-3. **Bonus polish** — skeleton loaders, pull-to-refresh, richer empty states (§13).
-4. **Check the layout on a tablet** (§12).
+2. **Manual QA pass** — walk the auth half of §14 on a device and tick it off.
+3. **Check the layout on a tablet** (§12).
+
+## Done — loading, refresh and empty polish (2026-07-27)
+
+- **Skeletons.** New `Skeleton` primitive (`components/ui/Skeleton.tsx`) — a pulsing block driven by one reanimated shared value on the UI thread, honouring the OS "reduce motion" setting the same way `BannerWave` does. `components/module/home/Skeletons.tsx` composes it into placeholders shaped like the real cards, so the page no longer lurches when data lands the way it did behind a small spinner.
+- **Pull-to-refresh.** `useAsyncList` gained `refresh()`, which returns a promise and, unlike `retry()`, does **not** blank the list — it leaves the current items on screen and, if the request fails, keeps them rather than replacing a readable list with an error because a background refresh timed out.
+- The three lists are now fetched by the home screen and passed into the sections as an `AsyncList` prop. Sections were fetching their own data, which left no way to refresh all three together or know when they had all finished. They are now purely presentational.
+- One pull refreshes all three in parallel; the spinner stays up until the slowest returns. `refreshing` is tracked as its own state rather than derived from the lists, or the control would spin over the skeletons on first mount.
+- **Richer empty and error states.** Both now render an icon in a tinted disc above the message; `EmptyView` takes an optional `hint` line. `ErrorView` defaults to an amber offline glyph — amber, not red, because a section that failed to load is recoverable.
+- `Loader` is no longer used by the home sections. Kept as a primitive (§8 requires it, and the placeholder tabs will want it) with its docstring updated to say when to reach for it over a skeleton.
+
+### Verified on device
+
+Ran against the connected Android device and captured each state:
+
+- Skeletons render in the exact grid position the real cards occupy.
+- Pull-to-refresh shows the spinner and keeps the loaded content visible throughout.
+- With networking disabled, all three sections show the offline `ErrorView` with a working "Try again"; the page still starts at the top with the banner intact.
+
+Not verified: `EmptyView` — the dev API returns data for all three endpoints, so an empty response cannot be produced without mocking.
 
 ## Done — memoised cards (2026-07-27)
 

@@ -1,6 +1,12 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
+
+const ICON_SIZE = 26;
+
+/** Amber, not red: a section that failed to load is recoverable, not destructive. */
+const ICON_COLOR = "#f59e0b";
 
 export interface ErrorViewProps {
   /** What went wrong, in the user's terms. Prefer the server's own wording. */
@@ -13,6 +19,8 @@ export interface ErrorViewProps {
   onRetry?: () => void;
   canRetry?: boolean;
   retryLabel?: string;
+  /** Glyph above the message. Pass `null` for a bare text state. */
+  icon?: keyof typeof Ionicons.glyphMap | null;
   /** Fills the available space and centres itself — for whole-screen failures. */
   fullScreen?: boolean;
   className?: string;
@@ -21,9 +29,9 @@ export interface ErrorViewProps {
 /**
  * Standalone failure state, for section- and screen-level errors.
  *
- * The counterpart to `Loader` and `EmptyView`: same padding, same muted type, so
- * the three states occupy the same visual slot and the section does not jump as it
- * moves between them.
+ * The counterpart to `Loader` and `EmptyView`: same padding, same disc-and-message
+ * layout, so the three states occupy the same visual slot and the section does not
+ * jump as it moves between them.
  *
  * Request-level failures on a *form* do not use this — those become a toast, or a
  * message on the offending field. This is for content that could not load.
@@ -33,6 +41,7 @@ export function ErrorView({
   onRetry,
   canRetry = true,
   retryLabel = "Try again",
+  icon = "cloud-offline-outline",
   fullScreen = false,
   className = "",
 }: ErrorViewProps) {
@@ -44,7 +53,15 @@ export function ErrorView({
       accessibilityLiveRegion="polite"
       className={`items-center justify-center ${fullScreen ? "flex-1" : "py-8"} ${className}`}
     >
-      <Text className="text-center text-sm text-muted dark:text-muted-dark">{message}</Text>
+      {icon ? (
+        <View className="mb-3 h-14 w-14 items-center justify-center rounded-full bg-amber-50 dark:bg-selected-dark">
+          <Ionicons name={icon} size={ICON_SIZE} color={ICON_COLOR} />
+        </View>
+      ) : null}
+
+      <Text className="max-w-xs text-center text-sm text-muted dark:text-muted-dark">
+        {message}
+      </Text>
 
       {onRetry && canRetry ? (
         <Button

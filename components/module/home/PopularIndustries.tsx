@@ -2,18 +2,23 @@ import { useState } from "react";
 import { View } from "react-native";
 
 import { IndustryCard } from "@/components/module/home/IndustryCard";
+import { IndustryGridSkeleton } from "@/components/module/home/Skeletons";
 import { EmptyView } from "@/components/ui/EmptyView";
 import { ErrorView } from "@/components/ui/ErrorView";
-import { Loader } from "@/components/ui/Loader";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ShowMoreButton } from "@/components/ui/ShowMoreButton";
-import { useIndustries } from "@/hooks/feature/home/use-industries";
+import type { AsyncList } from "@/hooks/use-async-list";
 import type { Industry } from "@/types/industry.types";
 
 /** Cards shown before "Show more" is tapped. Four rows of two. */
 const COLLAPSED_COUNT = 8;
 
 export interface PopularIndustriesProps {
+  /**
+   * Owned by the screen rather than fetched here, so pull-to-refresh can drive all
+   * three sections at once and know when they have all finished.
+   */
+  list: AsyncList<Industry>;
   onSelect?: (industry: Industry) => void;
 }
 
@@ -30,17 +35,23 @@ export interface PopularIndustriesProps {
  * Cards are `w-[48%]` inside `justify-between`, which spaces the columns without a
  * gap value that would have to be subtracted from the widths by hand.
  */
-export function PopularIndustries({ onSelect }: PopularIndustriesProps) {
-  const { state, retry } = useIndustries();
+export function PopularIndustries({ list, onSelect }: PopularIndustriesProps) {
+  const { state, retry } = list;
   const [expanded, setExpanded] = useState(false);
 
   return (
     <View className="px-4 py-10">
       <SectionHeading>Popular Industries</SectionHeading>
 
-      {state.status === "loading" ? <Loader message="Loading industries…" /> : null}
+      {state.status === "loading" ? <IndustryGridSkeleton /> : null}
 
-      {state.status === "empty" ? <EmptyView message="No industries to show yet." /> : null}
+      {state.status === "empty" ? (
+        <EmptyView
+          icon="briefcase-outline"
+          message="No industries yet"
+          hint="Industries appear here once employers start posting roles."
+        />
+      ) : null}
 
       {state.status === "error" ? (
         <ErrorView message={state.message} canRetry={state.canRetry} onRetry={retry} />

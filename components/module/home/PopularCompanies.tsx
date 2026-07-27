@@ -2,12 +2,12 @@ import { useState } from "react";
 import { View } from "react-native";
 
 import { CompanyCard } from "@/components/module/home/CompanyCard";
+import { CompanyGridSkeleton } from "@/components/module/home/Skeletons";
 import { EmptyView } from "@/components/ui/EmptyView";
 import { ErrorView } from "@/components/ui/ErrorView";
-import { Loader } from "@/components/ui/Loader";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ShowMoreButton } from "@/components/ui/ShowMoreButton";
-import { useCompanies } from "@/hooks/feature/home/use-companies";
+import type { AsyncList } from "@/hooks/use-async-list";
 import type { Company } from "@/types/company.types";
 
 /**
@@ -20,6 +20,11 @@ import type { Company } from "@/types/company.types";
 const COLLAPSED_COUNT = 4;
 
 export interface PopularCompaniesProps {
+  /**
+   * Owned by the screen rather than fetched here, so pull-to-refresh can drive all
+   * three sections at once and know when they have all finished.
+   */
+  list: AsyncList<Company>;
   onSelect?: (company: Company) => void;
 }
 
@@ -31,17 +36,23 @@ export interface PopularCompaniesProps {
  * vertical `FlatList` warns and loses virtualisation anyway, and the endpoint returns
  * the whole list unpaginated (five rows on the dev API).
  */
-export function PopularCompanies({ onSelect }: PopularCompaniesProps) {
-  const { state, retry } = useCompanies();
+export function PopularCompanies({ list, onSelect }: PopularCompaniesProps) {
+  const { state, retry } = list;
   const [expanded, setExpanded] = useState(false);
 
   return (
     <View className="px-4 pb-10">
       <SectionHeading>Popular Companies</SectionHeading>
 
-      {state.status === "loading" ? <Loader message="Loading companies…" /> : null}
+      {state.status === "loading" ? <CompanyGridSkeleton /> : null}
 
-      {state.status === "empty" ? <EmptyView message="No companies to show yet." /> : null}
+      {state.status === "empty" ? (
+        <EmptyView
+          icon="business-outline"
+          message="No companies yet"
+          hint="Employers show up here as they join the platform."
+        />
+      ) : null}
 
       {state.status === "error" ? (
         <ErrorView message={state.message} canRetry={state.canRetry} onRetry={retry} />

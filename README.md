@@ -36,7 +36,8 @@ The app covers the job-seeker landing experience and the full authentication flo
 - **Popular Industries** — image + name cards, collapsed to 8 with a "show more" toggle.
 - **Recommended Jobs** — company logo, job title, company name, location, job type and salary (SAR, with an approximate BDT figure).
 - **Popular Companies** — logo + name cards.
-- Every section handles all four states independently: **loading**, **ready**, **empty**, and **error with retry**.
+- Every section handles all four states independently: **loading** (skeletons shaped like the real cards), **ready**, **empty**, and **error with retry**.
+- **Pull to refresh** — one pull reloads all three sections in parallel, keeping the current content on screen while it works.
 
 ### Authentication
 
@@ -248,7 +249,7 @@ components/
 ├─ module/home/             HomeBanner, BannerWave, PopularIndustries, RecommendedJobs,
 │                           PopularCompanies, IndustryCard, JobCard, CompanyCard
 └─ ui/                      Button, Input, Select, Checkbox, DateField, DatePickerModal,
-                            OtpInput, Loader, ErrorView, EmptyView, Divider, FieldLabel,
+                            OtpInput, Loader, Skeleton, ErrorView, EmptyView, Divider, FieldLabel,
                             SectionHeading, ShowMoreButton
 
 constants/                  config (env), colors, theme
@@ -282,6 +283,10 @@ types/                      auth, user, job, company, industry
 
 **One state field, four states.** `useAsyncList` models list loading as a discriminated union (`loading | ready | empty | error`) rather than separate `isLoading` / `error` / `data` booleans, so a render cannot express "loading and errored". It also aborts in-flight requests on unmount and exposes a `retry` that is only surfaced when the failure is actually retryable.
 
+**`retry` and `refresh` are different operations.** `retry` restarts from `loading` and is for the button on a failed section, where there is nothing on screen to preserve. `refresh` backs pull-to-refresh: it returns a promise so the caller can hold the spinner for exactly as long as the work takes, leaves the current items visible, and on failure keeps them rather than throwing away a readable list because a background refresh timed out.
+
+**The home screen owns its three lists.** Sections used to fetch their own data, which left no way to refresh them together or know when they had all settled. The screen holds the three `AsyncList`s and passes them down; the sections are presentational.
+
 **Errors surface in exactly one place.** Per-field errors from the API are attached to the matching input; anything else becomes a toast. Never both, so the user is not told the same thing twice.
 
 **Client validation mirrors the backend where it matters.** The login phone rule matches what the server accepts rather than being stricter, so an account created with an unusual number is not locked out of the sign-in form. Registration is intentionally _stricter_ than the server for `name`, `email`, `dob` and `gender`, which the API only checks for presence.
@@ -312,8 +317,8 @@ types/                      auth, user, job, company, industry
 ## Known Issues
 
 - The jobs, search, dashboard and profile tabs are placeholders; the industry and company filter params passed from the landing page are not yet read.
-- No skeleton loaders or pull-to-refresh yet.
 - Tablet and landscape layouts have not been verified.
+- The empty state has not been seen against a real response — the dev API returns data for all three list endpoints.
 - Only a debug APK has been produced so far.
 
 `npm run typecheck`, `npm run lint` and `npm run format:check` all pass clean.

@@ -16,6 +16,11 @@ export interface LoaderProps {
  *
  * In-button loading is handled by `Button`'s own `loading` prop; use this for
  * content areas that have nothing to show yet.
+ *
+ * The home sections use skeletons instead — a placeholder shaped like the content
+ * reserves its space, so the page does not lurch when the data lands. Reach for this
+ * where the incoming shape is not known ahead of time, or where the wait blocks a
+ * whole screen and there is no layout to preserve.
  */
 export function Loader({
   message,
