@@ -16,7 +16,7 @@ import { usePalette } from "@/context/ThemeProvider";
  * Half the crest-to-trough travel, and it is the *real* travel — the curve reaches
  * `0` at the crest and `2 × AMPLITUDE` at the trough exactly.
  */
-const AMPLITUDE = 34;
+const AMPLITUDE = 24;
 
 /** Solid fill kept below the lowest trough, so no gradient shows through it. */
 const BASE_HEIGHT = 44;

@@ -45,12 +45,12 @@ export function HomeBanner({ onSearch }: HomeBannerProps) {
         // the clearance that keeps the search field off it.
         style={{ paddingBottom: WAVE_HEIGHT + SEARCH_CLEARANCE }}
       >
-        <View className="px-6 pt-10">
+        <View className="px-6 pt-14">
           <Text className="text-center text-2xl font-extrabold text-white">
             #1 Platform for Saudi Jobs
           </Text>
 
-          <Text className="mt-4 text-center text-sm leading-6 text-blue-100">
+          <Text className="mt-4 text-center text-md leading-6 text-blue-100">
             Apply for jobs in Saudi Arabia with verified employers. We connect Bangladeshi
             workforce with high-demand Saudi Jobs.
           </Text>
