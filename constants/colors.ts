@@ -62,6 +62,18 @@ export const Gradients = {
     /** gray-600 → gray-800 → gray-900, landing on `Colors.dark.background`. */
     dark: ["#4b5563", "#1f2937", "#111827"],
   },
+  /**
+   * Left-to-right blue behind the home banner. Stays blue in dark mode rather
+   * than desaturating with the rest of the UI: it is the one deliberately branded
+   * surface in the app, and the white headline needs the same contrast in both
+   * schemes. Dark simply drops two rungs down the blue ramp.
+   */
+  homeBanner: {
+    /** blue-600 → blue-500 → blue-400. */
+    light: ["#2563eb", "#3b82f6", "#60a5fa"],
+    /** blue-900 → blue-800 → blue-700. */
+    dark: ["#1e3a8a", "#1e40af", "#1d4ed8"],
+  },
 } as const satisfies Record<string, Record<"light" | "dark", GradientStops>>;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
