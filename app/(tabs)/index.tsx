@@ -2,6 +2,7 @@ import { router } from "expo-router";
 
 import { AppScreen } from "@/components/layout/AppScreen";
 import { HomeBanner } from "@/components/module/home/HomeBanner";
+import { PopularCompanies } from "@/components/module/home/PopularCompanies";
 import { PopularIndustries } from "@/components/module/home/PopularIndustries";
 import { RecommendedJobs } from "@/components/module/home/RecommendedJobs";
 
@@ -29,6 +30,14 @@ export default function HomeScreen() {
         disabled instead of offering an action that silently does nothing.
       */}
       <RecommendedJobs />
+
+      {/* Same as the industry handler: the jobs screen does not read the filter param
+          yet, so this navigates but does not narrow the list. */}
+      <PopularCompanies
+        onSelect={(company) =>
+          router.push({ pathname: "/(tabs)/jobs", params: { company: company.id } })
+        }
+      />
     </AppScreen>
   );
 }

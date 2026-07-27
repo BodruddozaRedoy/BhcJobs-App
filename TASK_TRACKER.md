@@ -69,7 +69,7 @@ https://dev.bhcjobs.com/storage
 
 - [x] Industry API
 - [x] Jobs API
-- [ ] Companies API
+- [x] Companies API
 
 ```
 GET /api/industry/get
@@ -134,15 +134,15 @@ Display:
 
 ## Popular Companies
 
-- [ ] Fetch companies
-- [ ] Loading state
-- [ ] Empty state
-- [ ] Error state
+- [x] Fetch companies
+- [x] Loading state
+- [x] Empty state
+- [x] Error state
 
 Display:
 
-- [ ] Company logo
-- [ ] Company name
+- [x] Company logo
+- [x] Company name
 
 ---
 
@@ -326,8 +326,8 @@ Landing
 
 - [x] Industry API works
 - [x] Jobs API works
-- [ ] Company API works
-- [ ] Images load correctly
+- [x] Company API works
+- [x] Images load correctly
 
 Login
 
