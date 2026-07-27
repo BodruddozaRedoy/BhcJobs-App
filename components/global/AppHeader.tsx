@@ -127,11 +127,7 @@ export function AppHeader() {
             then swapping it for an avatar is a worse flicker than a brief gap.
           */}
           {isRestoring ? null : isAuthenticated ? (
-            <IconCircle
-              filled
-              label="Open profile"
-              onPress={() => router.push("/(tabs)/profile")}
-            >
+            <IconCircle filled label="Open profile" onPress={() => router.push("/(tabs)/profile")}>
               <Ionicons name="person" size={18} color={Brand.DEFAULT} />
             </IconCircle>
           ) : (

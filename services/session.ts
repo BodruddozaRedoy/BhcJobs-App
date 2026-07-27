@@ -1,10 +1,6 @@
 import { setAuthToken } from "./api";
 import * as mmkv from "./storage/mmkv";
-import {
-  clearAllSecrets,
-  readAuthToken,
-  writeAuthToken,
-} from "./storage/secure-storage";
+import { clearAllSecrets, readAuthToken, writeAuthToken } from "./storage/secure-storage";
 
 /**
  * Coordinates the two things that must always agree about who is logged in: the

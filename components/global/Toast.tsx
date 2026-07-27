@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Animated, Easing, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -45,8 +45,13 @@ interface ToastProps {
  */
 export function Toast({ toast, onDismiss }: ToastProps) {
   const insets = useSafeAreaInsets();
-  const translateY = useRef(new Animated.Value(-24)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
+  // `useState` with a lazy initialiser rather than `useRef(new Animated.Value(…))`:
+  // the ref form constructs a throwaway `Animated.Value` on every render and reads
+  // `.current` during render, which the compiler's ref rules disallow. The lazy
+  // initialiser runs exactly once, and the setter is deliberately unused — the value
+  // is mutated by the animation driver, never replaced.
+  const [translateY] = useState(() => new Animated.Value(-24));
+  const [opacity] = useState(() => new Animated.Value(0));
 
   // `toast?.id` in the dependency list is what makes a second toast arriving while
   // the first is still visible restart the animation and the timer, rather than
@@ -73,28 +78,25 @@ export function Toast({ toast, onDismiss }: ToastProps) {
       }),
     ]).start();
 
-    const timer = setTimeout(
-      () => {
-        Animated.parallel([
-          Animated.timing(translateY, {
-            toValue: -24,
-            duration: EXIT_MS,
-            easing: Easing.in(Easing.cubic),
-            useNativeDriver: true,
-          }),
-          Animated.timing(opacity, {
-            toValue: 0,
-            duration: EXIT_MS,
-            useNativeDriver: true,
-          }),
-        ]).start(({ finished }) => {
-          // Only clear if the animation ran to completion; if it was interrupted by
-          // a new toast, that toast now owns the state.
-          if (finished) onDismiss();
-        });
-      },
-      toast.duration ?? DEFAULT_DURATION[toast.type],
-    );
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(translateY, {
+          toValue: -24,
+          duration: EXIT_MS,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: EXIT_MS,
+          useNativeDriver: true,
+        }),
+      ]).start(({ finished }) => {
+        // Only clear if the animation ran to completion; if it was interrupted by
+        // a new toast, that toast now owns the state.
+        if (finished) onDismiss();
+      });
+    }, toast.duration ?? DEFAULT_DURATION[toast.type]);
 
     return () => clearTimeout(timer);
   }, [toast?.id, toast, onDismiss, opacity, translateY]);

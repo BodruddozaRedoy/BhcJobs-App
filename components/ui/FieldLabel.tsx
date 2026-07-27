@@ -16,9 +16,7 @@ export interface FieldLabelProps {
  */
 export function FieldLabel({ children, required = false, className = "" }: FieldLabelProps) {
   return (
-    <Text
-      className={`mb-2 text-md font-semibold text-content dark:text-content-dark ${className}`}
-    >
+    <Text className={`text-md mb-2 font-semibold text-content dark:text-content-dark ${className}`}>
       {children}
       {required ? (
         // Hidden from screen readers: "required" is already announced via the

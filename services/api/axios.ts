@@ -254,7 +254,9 @@ api.interceptors.response.use(
       const fieldErrors = extractFieldErrors(body);
       const message = extractMessage(
         body,
-        fieldErrors ? "Please check the highlighted fields." : "That request could not be completed.",
+        fieldErrors
+          ? "Please check the highlighted fields."
+          : "That request could not be completed.",
       );
 
       logger.error(

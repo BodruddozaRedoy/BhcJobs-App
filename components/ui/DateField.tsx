@@ -40,6 +40,15 @@ export function DateField({
   containerClassName = "",
 }: DateFieldProps) {
   const [open, setOpen] = useState(false);
+  /**
+   * Bumped on every open, and used as the modal's `key`.
+   *
+   * The picker seeds its wheels from `value` when it mounts, so remounting is what
+   * makes a cancelled edit discard cleanly: reopening shows the committed date, not
+   * the abandoned one. Keyed rather than conditionally rendered so the modal stays
+   * mounted while closing and its fade-out still plays.
+   */
+  const [openCount, setOpenCount] = useState(0);
   const hasError = Boolean(error);
   const palette = usePalette();
 
@@ -55,7 +64,10 @@ export function DateField({
       {label ? <FieldLabel required={required}>{label}</FieldLabel> : null}
 
       <Pressable
-        onPress={() => setOpen(true)}
+        onPress={() => {
+          setOpenCount((count) => count + 1);
+          setOpen(true);
+        }}
         disabled={disabled}
         accessibilityRole="button"
         accessibilityLabel={label}
@@ -86,6 +98,7 @@ export function DateField({
       {hasError ? <Text className="mt-1.5 text-xs text-red-500">{error}</Text> : null}
 
       <DatePickerModal
+        key={openCount}
         visible={open}
         value={value}
         onCancel={close}

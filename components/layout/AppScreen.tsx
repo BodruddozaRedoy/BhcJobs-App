@@ -3,10 +3,7 @@ import { StatusBar, type StatusBarStyle } from "expo-status-bar";
 import { remapProps } from "nativewind";
 import type { ReactElement, ReactNode } from "react";
 import { ScrollView, View, type RefreshControlProps } from "react-native";
-import {
-  KeyboardAvoidingView,
-  KeyboardAwareScrollView,
-} from "react-native-keyboard-controller";
+import { KeyboardAvoidingView, KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Gradients } from "@/constants/colors";

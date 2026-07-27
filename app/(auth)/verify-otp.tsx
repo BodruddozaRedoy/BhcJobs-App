@@ -64,8 +64,8 @@ export default function VerifyOtpScreen() {
             Which number?
           </Text>
           <Text className="mt-4 text-center text-sm leading-6 text-content dark:text-content-dark">
-            We could not tell which phone number to verify. Please sign up again to have a new
-            code sent.
+            We could not tell which phone number to verify. Please sign up again to have a new code
+            sent.
           </Text>
           <Button
             label="Back to sign up"

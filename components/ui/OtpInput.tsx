@@ -124,9 +124,7 @@ export function OtpInput({
         />
       </Pressable>
 
-      {hasError ? (
-        <Text className="mt-2 text-center text-xs text-red-500">{error}</Text>
-      ) : null}
+      {hasError ? <Text className="mt-2 text-center text-xs text-red-500">{error}</Text> : null}
     </View>
   );
 }

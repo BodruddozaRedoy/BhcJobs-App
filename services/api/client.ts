@@ -19,11 +19,7 @@ export const post = async <T>(
   return data;
 };
 
-export const put = async <T>(
-  url: string,
-  body?: unknown,
-  options?: RequestOptions,
-): Promise<T> => {
+export const put = async <T>(url: string, body?: unknown, options?: RequestOptions): Promise<T> => {
   const { data } = await api.put<T>(url, body, options);
   return data;
 };

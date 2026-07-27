@@ -101,8 +101,6 @@ export default function RegisterScreen() {
           )}
         />
 
-
-
         <Controller
           control={form.control}
           name="passport_number"

@@ -17,27 +17,13 @@ const WHEEL_HEIGHT = ITEM_HEIGHT * VISIBLE_ROWS;
 /** Blank rows above and below, so the first and last item can reach the centre. */
 const PAD_ROWS = (VISIBLE_ROWS - 1) / 2;
 
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 /** Youngest and oldest ages the year column offers. Mirrors the schema's bounds. */
 const MIN_AGE_YEARS = 16;
 const MAX_AGE_YEARS = 100;
 
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(Math.max(value, min), max);
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
 /** Days in a given month, accounting for leap years. Day 0 of the next month. */
 const daysInMonth = (year: number, month1: number) =>
@@ -86,13 +72,22 @@ function Wheel({ items, index, onIndexChange, label }: WheelProps) {
    *  from external ones (e.g. the day column clamped when the month changes). */
   const settledAt = useRef(index);
   const didInitialScroll = useRef(false);
-  /** Drives the highlight during the drag, before the value is committed. */
-  const [activeIndex, setActiveIndex] = useState(index);
+  /**
+   * Row under the finger mid-drag, or `null` when the wheel is at rest.
+   *
+   * Held as an override rather than a mirror of `index`: a mirror has to be re-synced
+   * from an effect whenever `index` changes externally (the day column being clamped
+   * by a month change), and a `setState` in an effect costs an extra render pass. As
+   * an override it needs no syncing — clearing it on settle falls straight back to
+   * whatever `index` now is.
+   */
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const activeIndex = dragIndex ?? index;
 
   // Jump to the incoming index only when it did not come from this wheel's own
-  // scrolling — otherwise every settle would fight the user's next drag.
+  // scrolling — otherwise every settle would fight the user's next drag. Scrolling a
+  // ScrollView is an external-system sync, which is what an effect is for.
   useEffect(() => {
-    setActiveIndex(index);
     if (settledAt.current !== index) {
       settledAt.current = index;
       ref.current?.scrollTo({ y: index * ITEM_HEIGHT, animated: true });
@@ -104,7 +99,7 @@ function Wheel({ items, index, onIndexChange, label }: WheelProps) {
   const handleScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const next = offsetToIndex(event.nativeEvent.contentOffset.y, items.length);
-      setActiveIndex((current) => (current === next ? current : next));
+      setDragIndex((current) => (current === next ? current : next));
     },
     [items.length],
   );
@@ -115,7 +110,10 @@ function Wheel({ items, index, onIndexChange, label }: WheelProps) {
       // Recorded before the change is reported upwards, so the sync effect above
       // recognises the new index as this wheel's own and does not scroll against it.
       settledAt.current = next;
-      setActiveIndex(next);
+      // Back to following `index`. Batched with `onIndexChange` in the same handler,
+      // so the parent's new index and the cleared override land in one render — the
+      // highlight never flashes the previous row.
+      setDragIndex(null);
       if (next !== index) onIndexChange(next);
     },
     [index, items.length, onIndexChange],
@@ -195,6 +193,10 @@ export interface DatePickerModalProps {
  *
  * The year column is bounded to ages 16–100 rather than offering every year, so an
  * age the form would reject cannot be picked in the first place.
+ *
+ * The wheels are seeded from `value` **on mount only**. A caller that reopens the
+ * picker must remount it — `DateField` does this with a `key` — or a cancelled edit
+ * would still be showing the next time it opens.
  */
 export function DatePickerModal({
   visible,
@@ -224,29 +226,22 @@ export function DatePickerModal({
 
   const [year, setYear] = useState(initial.year);
   const [month, setMonth] = useState(initial.month);
-  const [day, setDay] = useState(initial.day);
-
-  // Re-seed each time the modal opens, so cancelling and reopening shows the
-  // committed value rather than the abandoned edit.
-  useEffect(() => {
-    if (!visible) return;
-    setYear(initial.year);
-    setMonth(initial.month);
-    setDay(initial.day);
-  }, [visible, initial]);
+  /**
+   * The day the user actually picked, which may not exist in the current month.
+   *
+   * Kept unclamped so the choice survives passing *through* a short month: 31 January
+   * → February → March comes back as the 31st. Clamping in place would have quietly
+   * rewritten it to the 28th on the way past.
+   */
+  const [pickedDay, setPickedDay] = useState(initial.day);
 
   const dayCount = daysInMonth(year, month);
 
-  // 31 January → February must drop the day to 28 or 29, or the confirmed value
-  // would be a date that does not exist.
-  useEffect(() => {
-    if (day > dayCount) setDay(dayCount);
-  }, [day, dayCount]);
+  // 31 January → February shows the 28th (or 29th). Derived rather than stored, so
+  // there is no render in which the value on screen is a date that does not exist.
+  const day = Math.min(pickedDay, dayCount);
 
-  const days = useMemo(
-    () => Array.from({ length: dayCount }, (_, i) => String(i + 1)),
-    [dayCount],
-  );
+  const days = useMemo(() => Array.from({ length: dayCount }, (_, i) => String(i + 1)), [dayCount]);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
@@ -281,7 +276,7 @@ export function DatePickerModal({
               label="Day"
               items={days}
               index={clamp(day - 1, 0, days.length - 1)}
-              onIndexChange={(i) => setDay(i + 1)}
+              onIndexChange={(i) => setPickedDay(i + 1)}
             />
             <Wheel
               label="Month"

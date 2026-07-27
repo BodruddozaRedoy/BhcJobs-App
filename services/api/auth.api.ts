@@ -22,8 +22,7 @@ import { ApiError } from "./types";
  * would leave the user "logged in" with every subsequent request rejected.
  */
 const resolveToken = (body: LoginResponse): string => {
-  const token =
-    body.token ?? body.access_token ?? body.data?.token ?? body.data?.access_token;
+  const token = body.token ?? body.access_token ?? body.data?.token ?? body.data?.access_token;
 
   if (typeof token === "string" && token.length > 0) return token;
 
@@ -89,8 +88,7 @@ export const register = async (payload: RegisterPayload): Promise<RegisterRespon
 export const verifyPhone = async (payload: PhoneVerifyPayload): Promise<Session | null> => {
   const body = await post<PhoneVerifyResponse>(ENDPOINTS.PHONE_VERIFY, payload);
 
-  const token =
-    body.token ?? body.access_token ?? body.data?.token ?? body.data?.access_token;
+  const token = body.token ?? body.access_token ?? body.data?.token ?? body.data?.access_token;
 
   if (typeof token === "string" && token.length > 0) {
     return { token, user: body.user ?? body.data?.user };

@@ -12,10 +12,7 @@ export const getSecret = async (key: SecureKey): Promise<string | null> => {
   try {
     return await SecureStore.getItemAsync(key, OPTIONS);
   } catch (error) {
-    logger.error(
-      `[secure-store] read failed for "${key}"; treating as absent`,
-      error,
-    );
+    logger.error(`[secure-store] read failed for "${key}"; treating as absent`, error);
     return null;
   }
 };
@@ -24,10 +21,7 @@ export const getSecret = async (key: SecureKey): Promise<string | null> => {
  * Writes a secret. Unlike reads, a failed write is surfaced: silently dropping a
  * token would leave the user apparently logged in until the next cold start.
  */
-export const setSecret = async (
-  key: SecureKey,
-  value: string,
-): Promise<void> => {
+export const setSecret = async (key: SecureKey, value: string): Promise<void> => {
   await SecureStore.setItemAsync(key, value, OPTIONS);
 };
 
@@ -44,21 +38,18 @@ export const deleteSecret = async (key: SecureKey): Promise<void> => {
  * True when the platform can actually store secrets. Android emulators without
  * a configured keystore and web builds both report false.
  */
-export const isSecureStoreAvailable = (): Promise<boolean> =>
-  SecureStore.isAvailableAsync();
+export const isSecureStoreAvailable = (): Promise<boolean> => SecureStore.isAvailableAsync();
 
 /* -------------------------------------------------------------------------- */
 /* Auth token                                                                 */
 /* -------------------------------------------------------------------------- */
 
-export const readAuthToken = (): Promise<string | null> =>
-  getSecret(SecureKeys.AUTH_TOKEN);
+export const readAuthToken = (): Promise<string | null> => getSecret(SecureKeys.AUTH_TOKEN);
 
 export const writeAuthToken = (token: string): Promise<void> =>
   setSecret(SecureKeys.AUTH_TOKEN, token);
 
-export const clearAuthToken = (): Promise<void> =>
-  deleteSecret(SecureKeys.AUTH_TOKEN);
+export const clearAuthToken = (): Promise<void> => deleteSecret(SecureKeys.AUTH_TOKEN);
 
 /**
  * Removes every secret. Call on logout, together with `clearAll()` from

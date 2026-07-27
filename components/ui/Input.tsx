@@ -52,9 +52,7 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
         // field is already `element-dark`, so sharing it would make the field
         // vanish into the card. One rung lighter is what separates them.
         className={`h-14 flex-row items-center rounded-xl border bg-white px-4 dark:bg-selected-dark ${
-          hasError
-            ? "border-red-400"
-            : "border-slate-200 dark:border-gray-700"
+          hasError ? "border-red-400" : "border-slate-200 dark:border-gray-700"
         } ${editable ? "" : "opacity-60"}`}
       >
         {icon ? (

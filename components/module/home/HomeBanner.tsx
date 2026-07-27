@@ -51,9 +51,9 @@ export function HomeBanner({ onSearch }: HomeBannerProps) {
             #1 Platform for Saudi Jobs
           </Text>
 
-          <Text className="mt-4 text-center text-md leading-6 text-blue-100">
-            Apply for jobs in Saudi Arabia with verified employers. We connect Bangladeshi
-            workforce with high-demand Saudi Jobs.
+          <Text className="text-md mt-4 text-center leading-6 text-blue-100">
+            Apply for jobs in Saudi Arabia with verified employers. We connect Bangladeshi workforce
+            with high-demand Saudi Jobs.
           </Text>
 
           {/*

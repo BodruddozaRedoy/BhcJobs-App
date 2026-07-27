@@ -46,9 +46,7 @@ const isRealDate = (value: string): boolean => {
   const date = new Date(Date.UTC(year, month - 1, day));
 
   return (
-    date.getUTCFullYear() === year &&
-    date.getUTCMonth() === month - 1 &&
-    date.getUTCDate() === day
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
   );
 };
 
@@ -59,7 +57,10 @@ const ageInYears = (value: string): number => {
   let age = now.getUTCFullYear() - year;
 
   // Not yet had this year's birthday.
-  if (now.getUTCMonth() + 1 < month || (now.getUTCMonth() + 1 === month && now.getUTCDate() < day)) {
+  if (
+    now.getUTCMonth() + 1 < month ||
+    (now.getUTCMonth() + 1 === month && now.getUTCDate() < day)
+  ) {
     age -= 1;
   }
 
@@ -99,21 +100,13 @@ export const GENDERS = ["male", "female"] as const;
  */
 export const registerSchema = z
   .object({
-    name: z
-      .string()
-      .trim()
-      .min(2, "Enter your full name")
-      .max(60, "Name is too long"),
+    name: z.string().trim().min(2, "Enter your full name").max(60, "Name is too long"),
     phone: z
       .string()
       .trim()
       .min(1, "Mobile number is required")
       .regex(BD_PHONE_REGEX, "Enter a valid 11-digit number starting with 01"),
-    email: z
-      .string()
-      .trim()
-      .min(1, "Email is required")
-      .email("Enter a valid email address"),
+    email: z.string().trim().min(1, "Email is required").email("Enter a valid email address"),
     // Six is the server's minimum; matching it exactly avoids a client rule the
     // backend would have accepted, or vice versa.
     password: z.string().min(6, "Password must be at least 6 characters"),
@@ -129,15 +122,16 @@ export const registerSchema = z
       .min(1, "Date of birth is required")
       .regex(ISO_DATE_REGEX, "Use the format YYYY-MM-DD")
       .refine(isRealDate, "That date does not exist")
-      .refine((value) => ageInYears(value) >= MIN_AGE_YEARS, `You must be at least ${MIN_AGE_YEARS}`)
+      .refine(
+        (value) => ageInYears(value) >= MIN_AGE_YEARS,
+        `You must be at least ${MIN_AGE_YEARS}`,
+      )
       .refine((value) => ageInYears(value) <= MAX_AGE_YEARS, "Check the year of birth"),
     gender: z.enum(GENDERS, { message: "Select a gender" }),
     // Client-side only — the API has no such field. Modelled as a boolean with a
     // refinement rather than `z.literal(true)` so the message is a plain "you must
     // accept" rather than zod's literal-mismatch wording.
-    terms: z
-      .boolean()
-      .refine((accepted) => accepted, "Accept the Terms of Service to continue"),
+    terms: z.boolean().refine((accepted) => accepted, "Accept the Terms of Service to continue"),
   })
   // Attached to `confirm_password` so the message renders under the field the user
   // needs to fix, not at the top of the form.
