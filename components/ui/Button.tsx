@@ -13,6 +13,12 @@ export interface ButtonProps extends Omit<PressableProps, "children" | "style"> 
   /** Rendered to the left of the label; hidden while loading. */
   icon?: React.ReactNode;
   className?: string;
+  /**
+   * Overrides the label's own classes. Separate from `className`, which lands on
+   * the container — a text colour set there does not reach the label, since the
+   * variant sets one explicitly and that wins.
+   */
+  labelClassName?: string;
 }
 
 const CONTAINER: Record<ButtonVariant, string> = {
@@ -58,6 +64,7 @@ export function Button({
   disabled = false,
   icon,
   className = "",
+  labelClassName = "",
   ...pressableProps
 }: ButtonProps) {
   // A loading button must not be pressable, or a double tap fires the request twice.
@@ -81,7 +88,10 @@ export function Button({
       ) : (
         <>
           {icon ? <View className="mr-2">{icon}</View> : null}
-          <Text className={`font-bold tracking-wide ${LABEL_SIZE[size]} ${LABEL[variant]}`}>
+          <Text
+            // `labelClassName` last, so a caller's colour overrides the variant's.
+            className={`font-bold tracking-wide ${LABEL_SIZE[size]} ${LABEL[variant]} ${labelClassName}`}
+          >
             {label}
           </Text>
         </>

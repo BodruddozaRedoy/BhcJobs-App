@@ -274,7 +274,7 @@ export function DatePickerModal({
             <View
               pointerEvents="none"
               style={{ top: PAD_ROWS * ITEM_HEIGHT, height: ITEM_HEIGHT }}
-              className="absolute left-0 right-0 border-y border-slate-200 dark:border-slate-700"
+              className="absolute left-0 right-0 border-y border-slate-200 dark:border-gray-700"
             />
 
             <Wheel

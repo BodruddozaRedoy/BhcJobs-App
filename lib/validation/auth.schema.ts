@@ -132,6 +132,12 @@ export const registerSchema = z
       .refine((value) => ageInYears(value) >= MIN_AGE_YEARS, `You must be at least ${MIN_AGE_YEARS}`)
       .refine((value) => ageInYears(value) <= MAX_AGE_YEARS, "Check the year of birth"),
     gender: z.enum(GENDERS, { message: "Select a gender" }),
+    // Client-side only — the API has no such field. Modelled as a boolean with a
+    // refinement rather than `z.literal(true)` so the message is a plain "you must
+    // accept" rather than zod's literal-mismatch wording.
+    terms: z
+      .boolean()
+      .refine((accepted) => accepted, "Accept the Terms of Service to continue"),
   })
   // Attached to `confirm_password` so the message renders under the field the user
   // needs to fix, not at the top of the form.

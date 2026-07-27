@@ -1,6 +1,7 @@
 import { colorScheme, useColorScheme } from "nativewind";
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 
+import { Colors } from "@/constants/colors";
 import { StorageKeys } from "@/services/storage/keys";
 import * as mmkv from "@/services/storage/mmkv";
 
@@ -84,4 +85,16 @@ export function useTheme(): ThemeContextValue {
   const context = useContext(ThemeContext);
   if (!context) throw new Error("useTheme must be used inside <ThemeProvider>");
   return context;
+}
+
+/**
+ * The raw palette for the scheme being rendered right now.
+ *
+ * For the handful of native props that take a colour *value* rather than a class
+ * — `placeholderTextColor`, icon tints, navigator options — where a `dark:`
+ * variant has nothing to attach to and a hardcoded hex silently breaks one scheme.
+ */
+export function usePalette(): typeof Colors.light | typeof Colors.dark {
+  const { isDark } = useTheme();
+  return isDark ? Colors.dark : Colors.light;
 }

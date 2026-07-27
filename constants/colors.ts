@@ -8,18 +8,28 @@
 
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    text: "#000000",
+    background: "#ffffff",
+    backgroundElement: "#F0F0F3",
+    backgroundSelected: "#E0E1E6",
+    textSecondary: "#60646C",
   },
+  /**
+   * The Tailwind `gray` ramp — faintly blue-tinted, so the brand blue reads as an
+   * accent rather than as a colour borrowed from another palette. The three
+   * surfaces step apart far enough to stack legibly: page, then the card on it,
+   * then the inputs inside the card.
+   */
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    text: "#ffffff",
+    /** gray-900 — page, header, tab bar. */
+    background: "#111827",
+    /** gray-800 — cards, modals, and other raised surfaces. */
+    backgroundElement: "#1f2937",
+    /** gray-600 — inputs, and pressed/selected states. */
+    backgroundSelected: "#4b5563",
+    /** gray-400 */
+    textSecondary: "#9ca3af",
   },
 } as const;
 
@@ -29,17 +39,29 @@ export const Colors = {
  * bright against a black surface.
  */
 export const Brand = {
-  DEFAULT: '#3b82f6',
-  dark: '#2563eb',
+  DEFAULT: "#3b82f6",
+  dark: "#2563eb",
 } as const;
 
+/** The tuple `expo-linear-gradient` expects — at least two stops. */
+type GradientStops = readonly [string, string, ...string[]];
+
 /**
- * Multi-stop gradients, typed as the tuple `expo-linear-gradient` expects (at
- * least two stops). Kept here so the auth screens cannot drift apart.
+ * Multi-stop gradients, one variant per colour scheme. Kept here so the auth
+ * screens cannot drift apart.
+ *
+ * Both variants run saturated blue → mid tone → the flat page background of their
+ * scheme, so the wash resolves into `Colors.<scheme>.background` at the bottom
+ * instead of ending on a visible seam.
  */
 export const Gradients = {
-  /** Diagonal blue → near-white wash behind the sign-in and register cards. */
-  auth: ['#93c5fd', '#dbeafe', '#f8fafc'],
-} as const satisfies Record<string, readonly [string, string, ...string[]]>;
+  /** Diagonal wash behind the sign-in and register cards. */
+  auth: {
+    /** blue-300 → blue-100 → slate-50. */
+    light: ["#93c5fd", "#dbeafe", "#f8fafc"],
+    /** gray-600 → gray-800 → gray-900, landing on `Colors.dark.background`. */
+    dark: ["#4b5563", "#1f2937", "#111827"],
+  },
+} as const satisfies Record<string, Record<"light" | "dark", GradientStops>>;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;

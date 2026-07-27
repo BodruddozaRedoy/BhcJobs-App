@@ -49,13 +49,18 @@ export function useRegister() {
       // Left unset so "Select a gender" can fire; an eager default would let the
       // form submit a value the user never chose.
       gender: undefined,
+      terms: false,
     },
   });
 
   const submit = useCallback(
     async (values: RegisterFormValues) => {
       try {
-        await register(values);
+        // `terms` is a client-side gate the API knows nothing about, so it is
+        // dropped rather than sent as an unrecognised key.
+        const { terms, ...payload } = values;
+
+        await register(payload);
 
         toast.success("Account created. Check your phone for the OTP.");
 

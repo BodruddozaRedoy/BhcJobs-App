@@ -3,7 +3,8 @@ import { forwardRef, useState } from "react";
 import { Pressable, Text, TextInput, View, type TextInputProps } from "react-native";
 
 import { FieldLabel } from "@/components/ui/FieldLabel";
-import { Brand, Colors } from "@/constants/colors";
+import { Brand } from "@/constants/colors";
+import { usePalette } from "@/context/ThemeProvider";
 
 export interface InputProps extends Omit<TextInputProps, "className"> {
   label?: string;
@@ -40,16 +41,20 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
 ) {
   const [revealed, setRevealed] = useState(false);
   const hasError = Boolean(error);
+  const palette = usePalette();
 
   return (
     <View className={containerClassName}>
       {label ? <FieldLabel required={required}>{label}</FieldLabel> : null}
 
       <View
-        className={`h-14 flex-row items-center rounded-xl border bg-white px-4 dark:bg-element-dark ${
+        // `selected-dark`, not `element-dark`: in dark mode the card behind this
+        // field is already `element-dark`, so sharing it would make the field
+        // vanish into the card. One rung lighter is what separates them.
+        className={`h-14 flex-row items-center rounded-xl border bg-white px-4 dark:bg-selected-dark ${
           hasError
             ? "border-red-400"
-            : "border-slate-200 dark:border-slate-700"
+            : "border-slate-200 dark:border-gray-700"
         } ${editable ? "" : "opacity-60"}`}
       >
         {icon ? (
@@ -61,7 +66,7 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
           editable={editable}
           // Masked unless the user has explicitly revealed it.
           secureTextEntry={secure && !revealed}
-          placeholderTextColor={Colors.light.textSecondary}
+          placeholderTextColor={palette.textSecondary}
           // Announce the error to screen readers; `accessibilityLabel` alone would
           // read the label but not why the field is rejected.
           accessibilityLabel={label}

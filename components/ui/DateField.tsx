@@ -4,7 +4,8 @@ import { Pressable, Text, View } from "react-native";
 
 import { DatePickerModal } from "@/components/ui/DatePickerModal";
 import { FieldLabel } from "@/components/ui/FieldLabel";
-import { Brand, Colors } from "@/constants/colors";
+import { Brand } from "@/constants/colors";
+import { usePalette } from "@/context/ThemeProvider";
 
 export interface DateFieldProps {
   label?: string;
@@ -40,6 +41,7 @@ export function DateField({
 }: DateFieldProps) {
   const [open, setOpen] = useState(false);
   const hasError = Boolean(error);
+  const palette = usePalette();
 
   const close = () => {
     setOpen(false);
@@ -59,8 +61,10 @@ export function DateField({
         accessibilityLabel={label}
         accessibilityValue={{ text: value || "not set" }}
         accessibilityHint={error ?? "Opens a date picker"}
-        className={`h-14 flex-row items-center rounded-xl border bg-white px-4 dark:bg-element-dark ${
-          hasError ? "border-red-400" : "border-slate-200 dark:border-slate-700"
+        // `selected-dark` matches Input: one rung lighter than the `element-dark`
+        // card behind it, which is what keeps the field visible in dark mode.
+        className={`h-14 flex-row items-center rounded-xl border bg-white px-4 dark:bg-selected-dark ${
+          hasError ? "border-red-400" : "border-slate-200 dark:border-gray-700"
         } ${disabled ? "opacity-60" : ""}`}
       >
         <Ionicons name="calendar" size={20} color={Brand.DEFAULT} style={{ marginRight: 12 }} />
@@ -76,7 +80,7 @@ export function DateField({
           {value || placeholder}
         </Text>
 
-        <Ionicons name="chevron-down" size={18} color={Colors.light.textSecondary} />
+        <Ionicons name="chevron-down" size={18} color={palette.textSecondary} />
       </Pressable>
 
       {hasError ? <Text className="mt-1.5 text-xs text-red-500">{error}</Text> : null}

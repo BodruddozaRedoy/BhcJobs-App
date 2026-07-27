@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Modal, Pressable, Text, View } from "react-native";
 
 import { FieldLabel } from "@/components/ui/FieldLabel";
-import { Brand, Colors } from "@/constants/colors";
+import { Brand } from "@/constants/colors";
+import { usePalette } from "@/context/ThemeProvider";
 
 export interface SelectOption<T extends string> {
   value: T;
@@ -50,6 +51,7 @@ export function Select<T extends string>({
   const [open, setOpen] = useState(false);
   const hasError = Boolean(error);
   const selected = options.find((option) => option.value === value);
+  const palette = usePalette();
 
   const close = () => {
     setOpen(false);
@@ -69,8 +71,10 @@ export function Select<T extends string>({
         accessibilityLabel={label}
         accessibilityValue={{ text: selected?.label ?? "not set" }}
         accessibilityHint={error ?? "Opens a list of options"}
-        className={`h-14 flex-row items-center rounded-xl border bg-white px-4 dark:bg-element-dark ${
-          hasError ? "border-red-400" : "border-slate-200 dark:border-slate-700"
+        // `selected-dark` matches Input: one rung lighter than the `element-dark`
+        // card behind it, which is what keeps the field visible in dark mode.
+        className={`h-14 flex-row items-center rounded-xl border bg-white px-4 dark:bg-selected-dark ${
+          hasError ? "border-red-400" : "border-slate-200 dark:border-gray-700"
         } ${disabled ? "opacity-60" : ""}`}
       >
         {icon ? (
@@ -85,7 +89,7 @@ export function Select<T extends string>({
           {selected?.label ?? placeholder}
         </Text>
 
-        <Ionicons name="chevron-down" size={18} color={Colors.light.textSecondary} />
+        <Ionicons name="chevron-down" size={18} color={palette.textSecondary} />
       </Pressable>
 
       {hasError ? <Text className="mt-1.5 text-xs text-red-500">{error}</Text> : null}

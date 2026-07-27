@@ -1,15 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
+import { openBrowserAsync } from "expo-web-browser";
 import { Controller } from "react-hook-form";
 import { Text, View, useWindowDimensions } from "react-native";
 
 import { AppScreen } from "@/components/layout/AppScreen";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { DateField } from "@/components/ui/DateField";
 import { Divider } from "@/components/ui/Divider";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Brand } from "@/constants/colors";
+import { PRIVACY_URL, TERMS_URL } from "@/constants/config";
 import { useRegister } from "@/hooks/feature/auth/use-register";
 import { GENDERS } from "@/lib/validation/auth.schema";
 
@@ -40,7 +43,10 @@ export default function RegisterScreen() {
     >
       <View
         style={{ width: cardWidth }}
-        className="rounded-2xl bg-white px-6 py-8 shadow-lg shadow-slate-300/60 dark:bg-element-dark"
+        // The light shadow tint would sit *lighter* than the dark surfaces behind
+        // it, reading as a glow rather than depth — hence the near-black in dark
+        // mode, at a higher opacity since a dark shadow needs more to register.
+        className="rounded-2xl bg-white px-6 py-8 shadow-lg shadow-slate-300/60 dark:bg-element-dark dark:shadow-black/70"
       >
         <View className="mb-8 flex-row items-center justify-center">
           <View className="mr-3 h-9 w-9 items-center justify-center rounded-full bg-blue-100">
@@ -95,30 +101,7 @@ export default function RegisterScreen() {
           )}
         />
 
-        <Controller
-          control={form.control}
-          name="email"
-          render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-            <Input
-              label="Email"
-              required
-              icon="mail"
-              placeholder="you@example.com"
-              keyboardType="email-address"
-              // Autocapitalising an email address is the single most common cause of
-              // a "valid" address the server cannot match.
-              autoCapitalize="none"
-              autoComplete="email"
-              textContentType="emailAddress"
-              editable={!isSubmitting}
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              error={error?.message}
-              containerClassName="mb-5"
-            />
-          )}
-        />
+
 
         <Controller
           control={form.control}
@@ -183,13 +166,38 @@ export default function RegisterScreen() {
 
         <Controller
           control={form.control}
+          name="email"
+          render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+            <Input
+              label="Email Address"
+              required
+              icon="mail"
+              placeholder="Enter your email address"
+              keyboardType="email-address"
+              // Autocapitalising an email address is the single most common cause of
+              // a "valid" address the server cannot match.
+              autoCapitalize="none"
+              autoComplete="email"
+              textContentType="emailAddress"
+              editable={!isSubmitting}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={error?.message}
+              containerClassName="mb-5"
+            />
+          )}
+        />
+
+        <Controller
+          control={form.control}
           name="password"
           render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
             <Input
               label="Password"
               required
               icon="lock-closed"
-              placeholder="At least 6 characters"
+              placeholder="Enter your new password"
               secure
               autoComplete="new-password"
               textContentType="newPassword"
@@ -211,7 +219,7 @@ export default function RegisterScreen() {
               label="Confirm Password"
               required
               icon="lock-closed"
-              placeholder="Re-enter your password"
+              placeholder="Re-enter your new password"
               secure
               autoComplete="new-password"
               textContentType="newPassword"
@@ -224,6 +232,41 @@ export default function RegisterScreen() {
               onSubmitEditing={onSubmit}
               containerClassName="mb-6"
             />
+          )}
+        />
+
+        <Controller
+          control={form.control}
+          name="terms"
+          render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+            <Checkbox
+              checked={value}
+              onChange={onChange}
+              onBlur={onBlur}
+              disabled={isSubmitting}
+              error={error?.message}
+              accessibilityLabel="I agree to the Terms of Service and Privacy Policy"
+              containerClassName="mb-6"
+            >
+              <Text className="text-sm text-content dark:text-content-dark">
+                By continuing, you agree to our{" "}
+                {/* Nested Text, so the links wrap inline with the sentence — a
+                    Pressable here would break out of the text flow. */}
+                <Text
+                  className="font-semibold text-brand underline dark:text-brand-dark"
+                  onPress={() => openBrowserAsync(TERMS_URL)}
+                >
+                  Terms of Service
+                </Text>{" "}
+                and{" "}
+                <Text
+                  className="font-semibold text-brand underline dark:text-brand-dark"
+                  onPress={() => openBrowserAsync(PRIVACY_URL)}
+                >
+                  Privacy Policy
+                </Text>
+              </Text>
+            </Checkbox>
           )}
         />
 

@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Gradients } from "@/constants/colors";
+import { useTheme } from "@/context/ThemeProvider";
 
 /**
  * NativeWind only wires `className`/`contentContainerClassName` up to styles for
@@ -90,6 +91,7 @@ export function AppScreen({
   contentClassName = "",
 }: AppScreenProps) {
   const insets = useSafeAreaInsets();
+  const { isDark } = useTheme();
 
   const insetStyle = {
     paddingTop: edges.includes("top") ? insets.top : 0,
@@ -148,7 +150,10 @@ export function AppScreen({
   if (gradient) {
     return (
       <LinearGradient
-        colors={Gradients.auth}
+        // Picked from the theme context rather than a `dark:` class, because
+        // `colors` is a real prop on the native view — NativeWind has no class to
+        // drive it.
+        colors={isDark ? Gradients.auth.dark : Gradients.auth.light}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{ flex: 1 }}

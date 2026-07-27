@@ -47,7 +47,8 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: palette.textSecondary,
         tabBarStyle: {
           backgroundColor: palette.background,
-          borderTopColor: isDark ? "#334155" : "#e2e8f0",
+          // gray-700 in dark, matching the header's bottom border.
+          borderTopColor: isDark ? "#374151" : "#e2e8f0",
         },
       }}
     >

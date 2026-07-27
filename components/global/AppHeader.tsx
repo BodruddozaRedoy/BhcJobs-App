@@ -14,32 +14,48 @@ import { useTheme } from "@/context/ThemeProvider";
  * never stretched.
  */
 const LOGO_HEIGHT = 28;
-/** `logo.png` is 3558 × 704. */
-const LOGO_ASPECT = 3558 / 704;
 
 /**
- * Brand wordmark.
+ * The two wordmark variants, each with its own intrinsic aspect ratio.
  *
- * The asset's "BHCJOBS" text is dark charcoal, which all but disappears against
- * the dark-mode header. Until there is a light-on-dark variant of the file, dark
- * mode renders the same asset tinted white — `tintColor` flattens it to a single
- * colour, so the blue hexagon becomes a white silhouette. Readable, and honest
- * about being a stopgap: adding `logo-dark.png` and picking it by `isDark` here is
- * the better fix.
+ * Two files rather than one tinted asset because the light variant's "BHCJOBS"
+ * text is dark charcoal, which all but disappears against the dark-mode header,
+ * and flattening it with `tintColor` would take the blue hexagon with it.
+ *
+ * The ratios are per-asset because the files are not the same shape (3558 × 704
+ * vs. 475 × 97); sharing one constant would letterbox whichever variant did not
+ * match it.
  */
+const LOGOS = {
+  light: { source: require("@/assets/images/logo.png"), aspect: 3558 / 704 },
+  dark: { source: require("@/assets/images/logo-dark.png"), aspect: 475 / 97 },
+} as const;
+
+/** Brand wordmark, doubling as the way back to Home from anywhere. */
 function Logo({ isDark }: { isDark: boolean }) {
+  const { source, aspect } = isDark ? LOGOS.dark : LOGOS.light;
+
   return (
-    <Image
-      source={require("@/assets/images/logo.png")}
-      style={{ height: LOGO_HEIGHT, width: LOGO_HEIGHT * LOGO_ASPECT }}
-      // `contain` rather than `cover`, so an aspect-ratio drift in a future asset
-      // letterboxes instead of cropping the wordmark.
-      contentFit="contain"
-      tintColor={isDark ? "#ffffff" : undefined}
-      // Read out in place of the image for screen readers.
-      accessibilityRole="image"
-      accessibilityLabel="BHC Jobs"
-    />
+    <Pressable
+      // `navigate`, not `push`: the header is on every screen, so pushing would
+      // stack duplicate Home entries behind the back gesture. This re-uses the
+      // existing route when there is one.
+      onPress={() => router.navigate("/(tabs)")}
+      accessibilityRole="link"
+      // Announced in place of the image, which is why the image itself carries no
+      // label — it would be read out twice.
+      accessibilityLabel="BHC Jobs, go to home"
+      hitSlop={8}
+      className="active:opacity-70"
+    >
+      <Image
+        source={source}
+        style={{ height: LOGO_HEIGHT, width: LOGO_HEIGHT * aspect }}
+        // `contain` rather than `cover`, so an aspect-ratio drift in a future asset
+        // letterboxes instead of cropping the wordmark.
+        contentFit="contain"
+      />
+    </Pressable>
   );
 }
 
@@ -99,7 +115,7 @@ export function AppHeader() {
   return (
     <View
       style={{ paddingTop: insets.top }}
-      className="border-b border-slate-200 bg-white dark:border-slate-700 dark:bg-background-dark"
+      className="border-b border-slate-200 bg-white dark:border-gray-700 dark:bg-element-dark"
     >
       <View className="h-14 flex-row items-center justify-between px-4">
         <Logo isDark={isDark} />
@@ -123,7 +139,10 @@ export function AppHeader() {
               label={guestAction.label}
               size="sm"
               variant="ghost"
-              className="border-brand border"
+              className="border border-brand"
+              // Brand blue on the dark header is legible but recedes next to the
+              // white wordmark; white gives the only action up here equal weight.
+              labelClassName="dark:text-white"
               onPress={guestAction.go}
             />
           )}

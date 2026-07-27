@@ -35,7 +35,10 @@ export default function LoginScreen() {
     >
       <View
         style={{ width: cardWidth }}
-        className="rounded-2xl bg-white px-6 py-8 shadow-lg shadow-slate-300/60 dark:bg-element-dark"
+        // The light shadow tint would sit *lighter* than the dark surfaces behind
+        // it, reading as a glow rather than depth — hence the near-black in dark
+        // mode, at a higher opacity since a dark shadow needs more to register.
+        className="rounded-2xl bg-white px-6 py-8 shadow-lg shadow-slate-300/60 dark:bg-element-dark dark:shadow-black/70"
       >
         {/* Header: badge + title, centred */}
         <View className="mb-8 flex-row items-center justify-center">
