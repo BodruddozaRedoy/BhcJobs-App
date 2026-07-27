@@ -20,3 +20,6 @@ export const storageImageUrl = (
 
 export const industryImageUrl = (filename: string | null | undefined): string | undefined =>
   storageImageUrl("industry", filename);
+
+export const companyImageUrl = (filename: string | null | undefined): string | undefined =>
+  storageImageUrl("company", filename);

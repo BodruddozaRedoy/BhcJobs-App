@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { AppScreen } from "@/components/layout/AppScreen";
 import { HomeBanner } from "@/components/module/home/HomeBanner";
 import { PopularIndustries } from "@/components/module/home/PopularIndustries";
+import { RecommendedJobs } from "@/components/module/home/RecommendedJobs";
 
 export default function HomeScreen() {
   return (
@@ -21,6 +22,13 @@ export default function HomeScreen() {
           router.push({ pathname: "/(tabs)/jobs", params: { industry: industry.id } })
         }
       />
+
+      {/*
+        No `onView` / `onApply` yet: neither a job detail screen nor an apply flow
+        exists. Left unpassed rather than stubbed, so `JobCard` renders both buttons
+        disabled instead of offering an action that silently does nothing.
+      */}
+      <RecommendedJobs />
     </AppScreen>
   );
 }

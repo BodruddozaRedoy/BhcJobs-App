@@ -27,7 +27,7 @@ export function IndustryCard({ industry, onPress }: IndustryCardProps) {
       // would promise a screen reader something that does not happen.
       accessibilityRole={onPress ? "button" : undefined}
       accessibilityLabel={`${industry.name}, ${industry.jobs_count} available jobs`}
-      className="h-36 items-center justify-center rounded-2xl border border-slate-100 bg-white px-3 shadow-sm shadow-slate-300/50 dark:border-gray-700 dark:bg-element-dark dark:shadow-black/60"
+      className="h-36 items-center justify-center rounded-2xl border border-slate-100 bg-white px-3 shadow-md shadow-slate-300/50 dark:border-gray-700 dark:bg-element-dark dark:shadow-black/60"
     >
       {source ? (
         <Image

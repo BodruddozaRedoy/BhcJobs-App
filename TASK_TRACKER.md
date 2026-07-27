@@ -68,7 +68,7 @@ https://dev.bhcjobs.com/storage
 ## GET APIs
 
 - [x] Industry API
-- [ ] Jobs API
+- [x] Jobs API
 - [ ] Companies API
 
 ```
@@ -115,20 +115,20 @@ POST /api/job_seeker/login
 
 ## Recommended Jobs
 
-- [ ] Fetch jobs
-- [ ] Loading state
-- [ ] Empty state
-- [ ] Error state
-- [ ] Job cards
+- [x] Fetch jobs
+- [x] Loading state
+- [x] Empty state
+- [x] Error state
+- [x] Job cards
 
 Display:
 
-- [ ] Company logo
-- [ ] Job title
-- [ ] Company name
-- [ ] Location
-- [ ] Job type (if available)
-- [ ] Salary (if available)
+- [x] Company logo
+- [x] Job title
+- [x] Company name
+- [x] Location
+- [x] Job type (if available)
+- [x] Salary (if available)
 
 ---
 
@@ -324,8 +324,8 @@ Display:
 
 Landing
 
-- [ ] Industry API works
-- [ ] Jobs API works
+- [x] Industry API works
+- [x] Jobs API works
 - [ ] Company API works
 - [ ] Images load correctly
 

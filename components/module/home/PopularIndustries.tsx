@@ -1,10 +1,11 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { IndustryCard } from "@/components/module/home/IndustryCard";
 import { Button } from "@/components/ui/Button";
 import { Loader } from "@/components/ui/Loader";
+import { SectionHeading } from "@/components/ui/SectionHeading";
+import { ShowMoreButton } from "@/components/ui/ShowMoreButton";
 import { useIndustries } from "@/hooks/feature/home/use-industries";
 import type { Industry } from "@/types/industry.types";
 
@@ -13,15 +14,6 @@ const COLLAPSED_COUNT = 8;
 
 export interface PopularIndustriesProps {
   onSelect?: (industry: Industry) => void;
-}
-
-/** Pill heading, matching the other home sections. */
-function SectionHeading({ children }: { children: string }) {
-  return (
-    <View className="mb-6 self-center rounded-full bg-blue-50 px-6 py-2.5 dark:bg-element-dark">
-      <Text className="text-base font-bold text-content dark:text-content-dark">{children}</Text>
-    </View>
-  );
 }
 
 /**
@@ -73,11 +65,15 @@ export function PopularIndustries({ onSelect }: PopularIndustriesProps) {
       ) : null}
 
       {state.status === "ready" ? (
-        <IndustryGrid industries={state.industries} expanded={expanded} onSelect={onSelect} />
+        <IndustryGrid industries={state.items} expanded={expanded} onSelect={onSelect} />
       ) : null}
 
-      {state.status === "ready" && state.industries.length > COLLAPSED_COUNT ? (
-        <ShowMoreButton expanded={expanded} onPress={() => setExpanded((open) => !open)} />
+      {state.status === "ready" && state.items.length > COLLAPSED_COUNT ? (
+        <ShowMoreButton
+          noun="industries"
+          expanded={expanded}
+          onPress={() => setExpanded((open) => !open)}
+        />
       ) : null}
     </View>
   );
@@ -102,23 +98,5 @@ function IndustryGrid({
         </View>
       ))}
     </View>
-  );
-}
-
-/** Round arrow button that toggles the grid between eight cards and all of them. */
-function ShowMoreButton({ expanded, onPress }: { expanded: boolean; onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={expanded ? "Show fewer industries" : "Show more industries"}
-      // Conveys the collapsed/expanded state, which the rotating chevron only
-      // conveys visually.
-      accessibilityState={{ expanded }}
-      hitSlop={8}
-      className="mt-6 h-11 w-11 items-center justify-center self-center rounded-full bg-brand active:bg-brand-dark"
-    >
-      <Ionicons name={expanded ? "chevron-up" : "chevron-down"} size={22} color="#ffffff" />
-    </Pressable>
   );
 }

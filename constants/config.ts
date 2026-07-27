@@ -17,6 +17,20 @@ export const STORAGE_URL =
 export const API_TIMEOUT_MS = 15_000;
 
 /**
+ * SAR → BDT rate behind the "(BDT … approx.)" figures on job cards.
+ *
+ * Hardcoded because no endpoint exposes a rate: the job payload carries `currency`,
+ * `min_salary` and `food_amount` in SAR only. The value is reverse-engineered from
+ * the reference design, where SAR 900 → BDT 29,700 and SAR 250 → BDT 8,250 — both
+ * exactly ×33.
+ *
+ * A pinned rate goes stale, which is why every figure derived from it is labelled
+ * "approx.". Overridable by env so it can be corrected without a code change, but
+ * the real fix is for the API to return the converted amount.
+ */
+export const SAR_TO_BDT = Number(process.env.EXPO_PUBLIC_SAR_TO_BDT ?? 33);
+
+/**
  * Public legal pages, linked from the sign-up form.
  *
  * Opened in a browser rather than rendered in-app: the copy is owned by the
