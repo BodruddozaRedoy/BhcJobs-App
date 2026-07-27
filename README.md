@@ -248,7 +248,8 @@ components/
 ├─ module/home/             HomeBanner, BannerWave, PopularIndustries, RecommendedJobs,
 │                           PopularCompanies, IndustryCard, JobCard, CompanyCard
 └─ ui/                      Button, Input, Select, Checkbox, DateField, DatePickerModal,
-                            OtpInput, Loader, Divider, FieldLabel, SectionHeading, ShowMoreButton
+                            OtpInput, Loader, ErrorView, EmptyView, Divider, FieldLabel,
+                            SectionHeading, ShowMoreButton
 
 constants/                  config (env), colors, theme
 context/                    AuthProvider, ThemeProvider, ToastProvider
@@ -307,7 +308,6 @@ types/                      auth, user, job, company, industry
 ## Known Issues
 
 - The jobs, search, dashboard and profile tabs are placeholders; the industry and company filter params passed from the landing page are not yet read.
-- The error and empty blocks are duplicated inline across the three landing sections rather than extracted into shared components.
 - The card components are not wrapped in `React.memo`.
 - No skeleton loaders or pull-to-refresh yet.
 - Tablet and landscape layouts have not been verified.

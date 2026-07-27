@@ -267,8 +267,8 @@ Display:
 - [x] Company Card
 - [x] Industry Card
 - [x] Loader
-- [ ] Error View — error UI is duplicated inline in the three home sections; not extracted into a shared component
-- [ ] Empty View — same, inline `<Text>` per section
+- [x] Error View — `components/ui/ErrorView.tsx`, with an optional retry gated on `canRetry`
+- [x] Empty View — `components/ui/EmptyView.tsx`
 - [x] Extras: Checkbox, Select, DateField, DatePickerModal, OtpInput, Divider, FieldLabel, ShowMoreButton, Toast
 
 ---
@@ -401,10 +401,16 @@ Ordered by what blocks submission.
 
 1. **Generate a release APK** — `npx expo run:android --variant release` or `eas build -p android --profile preview`.
 2. **Manual QA pass** — walk §14 on a device and tick it off.
-3. **Extract shared `ErrorView` / `EmptyView`** — the error+retry and empty blocks are duplicated across the three home sections (§8).
-4. **Memoize the card components** — `React.memo` on `JobCard`, `IndustryCard`, `CompanyCard` (§10).
-5. **Bonus polish** — skeleton loaders, pull-to-refresh, richer empty states (§13).
-6. **Check the layout on a tablet** (§12).
+3. **Memoize the card components** — `React.memo` on `JobCard`, `IndustryCard`, `CompanyCard` (§10).
+4. **Bonus polish** — skeleton loaders, pull-to-refresh, richer empty states (§13).
+5. **Check the layout on a tablet** (§12).
+
+## Done — shared state components (2026-07-27)
+
+- Added `components/ui/ErrorView.tsx` and `components/ui/EmptyView.tsx`, built to match `Loader`'s API (`fullScreen`, `className`) and padding, so all three states occupy the same visual slot and a section does not jump as it moves between them.
+- `ErrorView` takes `canRetry` and only renders the button when a retry could actually succeed, keeping the rule in one place instead of re-stated per section.
+- Refactored `PopularIndustries`, `RecommendedJobs` and `PopularCompanies` onto them — 60 lines of duplicated JSX down to 6, with no visual change.
+- Both announce themselves to screen readers (`ErrorView` as an `alert`), which the inline blocks did not.
 
 ## Done — build health (2026-07-27)
 

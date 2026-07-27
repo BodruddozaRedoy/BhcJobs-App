@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { JobCard } from "@/components/module/home/JobCard";
-import { Button } from "@/components/ui/Button";
+import { EmptyView } from "@/components/ui/EmptyView";
+import { ErrorView } from "@/components/ui/ErrorView";
 import { Loader } from "@/components/ui/Loader";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ShowMoreButton } from "@/components/ui/ShowMoreButton";
@@ -35,29 +36,10 @@ export function RecommendedJobs({ onView, onApply }: RecommendedJobsProps) {
 
       {state.status === "loading" ? <Loader message="Loading jobs…" /> : null}
 
-      {state.status === "empty" ? (
-        <Text className="py-8 text-center text-sm text-muted dark:text-muted-dark">
-          No jobs to show yet.
-        </Text>
-      ) : null}
+      {state.status === "empty" ? <EmptyView message="No jobs to show yet." /> : null}
 
       {state.status === "error" ? (
-        <View className="items-center py-8">
-          <Text className="text-center text-sm text-muted dark:text-muted-dark">
-            {state.message}
-          </Text>
-          {/* Only offered when retrying could plausibly succeed — a button guaranteed
-              to fail again is worse than none. */}
-          {state.canRetry ? (
-            <Button
-              label="Try again"
-              variant="secondary"
-              size="sm"
-              onPress={retry}
-              className="mt-4"
-            />
-          ) : null}
-        </View>
+        <ErrorView message={state.message} canRetry={state.canRetry} onRetry={retry} />
       ) : null}
 
       {state.status === "ready" ? (

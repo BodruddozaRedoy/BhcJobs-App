@@ -1,0 +1,30 @@
+# Normalise line endings to LF in the repository and in the working tree.
+#
+# `core.autocrlf=true` is the Git for Windows default and would check these files
+# out as CRLF, which contradicts Prettier's `endOfLine: "lf"` — `npm run
+# format:check` would then fail on a fresh Windows clone before anyone had touched
+# the code. Pinning it here keeps the two in agreement on every platform.
+* text=auto eol=lf
+
+# Never touched by Git's EOL conversion.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.keystore binary
+*.jks binary
+*.apk binary
+*.aab binary
+
+# Generated; keep it out of diffs and merge conflicts.
+package-lock.json -diff
+
+# Gradle wrapper must stay executable and LF, or it will not run on CI.
+gradlew text eol=lf
+gradlew.bat text eol=crlf
