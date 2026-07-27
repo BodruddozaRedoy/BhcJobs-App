@@ -80,7 +80,7 @@ GET /api/company/get
 ## POST APIs
 
 - [ ] Register API
-- [ ] Phone Verify API
+- [x] Phone Verify API
 - [ ] Login API
 
 ```
@@ -210,10 +210,10 @@ Display:
 
 - [ ] Register API integration
 - [ ] Receive OTP
-- [ ] Phone Verify API
-- [ ] Loading state
-- [ ] Success state
-- [ ] Error state
+- [x] Phone Verify API
+- [x] Loading state
+- [x] Success state
+- [x] Error state
 
 ---
 

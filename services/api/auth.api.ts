@@ -2,6 +2,8 @@ import { logger } from "@/lib/logger";
 import type {
   LoginPayload,
   LoginResponse,
+  PhoneVerifyPayload,
+  PhoneVerifyResponse,
   RegisterPayload,
   RegisterResponse,
   Session,
@@ -68,3 +70,33 @@ export const register = async (payload: RegisterPayload): Promise<RegisterRespon
     email: payload.email.trim().toLowerCase(),
     passport_number: payload.passport_number.trim().toUpperCase(),
   });
+
+/**
+ * Confirms the OTP sent to `phone` at registration, activating the account.
+ *
+ * Resolves only on success — the interceptor rejects `{ status: false }` bodies even
+ * though they arrive as HTTP 200, so a wrong or expired code surfaces here as a
+ * thrown `ApiError`. Probed: an unknown number answers "Account not found! Please
+ * register first.." as a `message`, not a field error, so it reaches the caller as
+ * `ApiError.message` with no `fieldErrors`.
+ *
+ * Returns a `Session` when the backend chose to sign the user in as part of
+ * verification, and `null` when it only confirmed the number. Which of the two
+ * happens could not be observed without a live phone, so both are handled: unlike
+ * `login`, a missing token here is a legitimate outcome rather than a broken
+ * contract, and must not throw.
+ */
+export const verifyPhone = async (payload: PhoneVerifyPayload): Promise<Session | null> => {
+  const body = await post<PhoneVerifyResponse>(ENDPOINTS.PHONE_VERIFY, payload);
+
+  const token =
+    body.token ?? body.access_token ?? body.data?.token ?? body.data?.access_token;
+
+  if (typeof token === "string" && token.length > 0) {
+    return { token, user: body.user ?? body.data?.user };
+  }
+
+  logger.success("[auth] phone verified without a token; the user will be sent to sign in");
+
+  return null;
+};

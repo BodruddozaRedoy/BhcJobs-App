@@ -147,3 +147,27 @@ export const registerSchema = z
   });
 
 export type RegisterFormValues = z.infer<typeof registerSchema>;
+
+/**
+ * Digits in the OTP. Four, per the design — the API does not validate a length
+ * (an empty body reports only "The otp field is required"), so this is the only
+ * check on it before the round trip.
+ */
+export const OTP_LENGTH = 4;
+
+/**
+ * Client-side rules for OTP verification.
+ *
+ * The code is kept as a string rather than coerced to a number: a leading zero has
+ * to survive, and `0421` as a number is `421`.
+ */
+export const otpSchema = z.object({
+  otp: z
+    .string()
+    .trim()
+    .min(1, "Enter the code we sent you")
+    .regex(/^\d+$/, "Digits only")
+    .length(OTP_LENGTH, `The code is ${OTP_LENGTH} digits`),
+});
+
+export type OtpFormValues = z.infer<typeof otpSchema>;

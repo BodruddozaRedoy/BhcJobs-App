@@ -31,8 +31,69 @@ interface TimedRequest extends InternalAxiosRequestConfig {
   metadata?: { startedAt: number };
 }
 
-/** Keys whose values must never reach the log output. */
-const REDACTED_KEYS = ["password", "password_confirmation", "token", "otp"];
+/**
+ * Header names whose values are masked, compared lowercased.
+ *
+ * Request *bodies* are logged verbatim, passwords and OTPs included — every call
+ * here goes through `logger`, which is a no-op outside `__DEV__`, so none of it can
+ * reach a release build. Worth knowing anyway: a dev-mode screen recording or a
+ * pasted Metro log will contain real credentials.
+ */
+const REDACTED_HEADERS = ["authorization", "cookie", "set-cookie", "x-api-key"];
+
+/* -------------------------------------------------------------------------- */
+/* Log formatting                                                             */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Width of the label column. Sized to the longest label (`Duration:`) so every
+ * value in a block starts at the same offset and the whole thing scans vertically.
+ */
+const LABEL_WIDTH = 9;
+
+/** A labelled line in a log block. */
+type LogRow = readonly [label: string, value: unknown];
+
+/**
+ * Turns a headline and label/value pairs into console arguments:
+ *
+ *   → POST /api/job_seeker/login
+ *     Url:      https://dev.bhcjobs.com/api/job_seeker/login
+ *     Method:   POST
+ *     Payload:  { phone: '01758383860', password: 'hunter2' }
+ *
+ * Objects are passed through as their own argument rather than being serialised, so
+ * the console renders them as inspectable objects — collapsible in a debugger, and
+ * depth-limited in the Metro terminal instead of pages of indented JSON. Scalars are
+ * folded into the surrounding string so their labels stay in one aligned column.
+ *
+ * Rows whose value is `undefined` or empty are dropped, so a GET prints no empty
+ * `Payload:` line.
+ */
+const logRows = (headline: string, rows: readonly LogRow[]): unknown[] => {
+  const parts: unknown[] = [];
+  let text = headline;
+
+  for (const [label, value] of rows) {
+    if (value === undefined || value === null || value === "") continue;
+
+    const column = `${label}:`.padEnd(LABEL_WIDTH);
+
+    if (typeof value === "object") {
+      // Flush the text accumulated so far, ending on this row's label, then hand the
+      // object over untouched. Flushing here is what keeps rows in their given order.
+      parts.push(`${text}\n  ${column}`);
+      parts.push(value);
+      text = "";
+    } else {
+      text += `\n  ${column} ${String(value)}`;
+    }
+  }
+
+  if (text !== "") parts.push(text);
+
+  return parts;
+};
 
 /**
  * Absolute URL for a request, so a log line can be pasted straight into curl or a
@@ -54,18 +115,43 @@ const fullUrl = (config?: InternalAxiosRequestConfig): string => {
 };
 
 /**
- * Replaces sensitive values with `***` so credentials never appear in logs.
- * Only the top level is walked — request bodies here are flat form payloads.
+ * A request body in a form the console can render as an object.
+ *
+ * By the time the *response* interceptor sees `config.data`, axios has already
+ * serialised it to a JSON string — logging that as-is gives one long escaped line
+ * instead of an inspectable object, so it is parsed back. A body that is not JSON
+ * (form-encoded, plain text) is returned untouched.
  */
-const redact = (body: unknown): unknown => {
-  if (!body || typeof body !== "object") return body;
+const readableBody = (body: unknown): unknown => {
+  if (typeof body !== "string") return body;
 
-  return Object.fromEntries(
-    Object.entries(body as Record<string, unknown>).map(([key, value]) => [
-      key,
-      REDACTED_KEYS.includes(key) ? "***" : value,
-    ]),
-  );
+  try {
+    return JSON.parse(body);
+  } catch {
+    return body;
+  }
+};
+
+/**
+ * Request/response headers as a plain object, with credentials masked.
+ *
+ * `AxiosHeaders` is a class instance, so it has to be flattened via `toJSON` before
+ * `JSON.stringify` produces anything readable.
+ */
+const redactHeaders = (headers: unknown): Record<string, unknown> | undefined => {
+  if (!headers || typeof headers !== "object") return undefined;
+
+  const source =
+    typeof (headers as AxiosHeaders).toJSON === "function"
+      ? (headers as AxiosHeaders).toJSON()
+      : (headers as Record<string, unknown>);
+
+  const entries = Object.entries(source).map(([key, value]) => [
+    key,
+    REDACTED_HEADERS.includes(key.toLowerCase()) ? "***" : value,
+  ]);
+
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 };
 
 api.interceptors.request.use(
@@ -81,10 +167,18 @@ api.interceptors.request.use(
       config.headers.set("Authorization", `Bearer ${authToken}`);
     }
 
-    // → POST https://dev.bhcjobs.com/api/job_seeker/login { phone: '017…', password: '***' }
+    // → POST /api/job_seeker/login
+    //   Url:      https://dev.bhcjobs.com/api/job_seeker/login
+    //   Method:   POST
+    //   Header:   { Accept: 'application/json', Authorization: '***' }
+    //   Payload:  { phone: '01758383860', password: 'hunter2' }
     logger.request(
-      `→ ${config.method?.toUpperCase()} ${fullUrl(config)}`,
-      config.data ? redact(config.data) : "",
+      ...logRows(`→ ${config.method?.toUpperCase()} ${config.url}`, [
+        ["Url", fullUrl(config)],
+        ["Method", config.method?.toUpperCase()],
+        ["Header", redactHeaders(config.headers)],
+        ["Payload", config.data ? readableBody(config.data) : undefined],
+      ]),
     );
 
     return config;
@@ -145,7 +239,9 @@ const extractFieldErrors = (body: unknown): Record<string, string[]> | undefined
 
 api.interceptors.response.use(
   (response) => {
-    const route = `${response.config.method?.toUpperCase()} ${fullUrl(response.config)}`;
+    // Path only in the headline; the absolute URL is a row in the block below, so
+    // repeating it here would just make every line wrap.
+    const route = `${response.config.method?.toUpperCase()} ${response.config.url}`;
     const duration = elapsedMs(response.config as TimedRequest);
     const body: unknown = response.data;
 
@@ -161,7 +257,18 @@ api.interceptors.response.use(
         fieldErrors ? "Please check the highlighted fields." : "That request could not be completed.",
       );
 
-      logger.error(`← ✗ ${response.status} ${route} (${duration}) [client] ${message}`, body);
+      logger.error(
+        ...logRows(`← ✗ ${response.status} ${route} (${duration})`, [
+          ["Url", fullUrl(response.config)],
+          ["Method", response.config.method?.toUpperCase()],
+          ["Status", `${response.status} (envelope status: false)`],
+          ["Duration", duration],
+          ["Kind", "client"],
+          ["Message", message],
+          ["Errors", fieldErrors],
+          ["Body", body],
+        ]),
+      );
 
       return Promise.reject(
         new ApiError({
@@ -174,8 +281,24 @@ api.interceptors.response.use(
       );
     }
 
-    // ← 200 GET https://dev.bhcjobs.com/api/job/get (312ms)
-    logger.success(`← ${response.status} ${route} (${duration})`);
+    // ← 200 GET /api/job/get (312ms)
+    //   Url:      https://dev.bhcjobs.com/api/job/get
+    //   Method:   GET
+    //   Status:   200
+    //   Duration: 312ms
+    //   Body:     { status: true, message: 'Jobs fetched successfully', data: [ … ] }
+    logger.success(
+      ...logRows(`← ${response.status} ${route} (${duration})`, [
+        ["Url", fullUrl(response.config)],
+        ["Method", response.config.method?.toUpperCase()],
+        ["Status", response.status],
+        ["Duration", duration],
+        // The whole body, handed over as an object so the console renders it
+        // inspectable. List endpoints return every row, so this is verbose by
+        // design — the console's own depth limit is what keeps it readable.
+        ["Body", body],
+      ]),
+    );
 
     return response;
   },
@@ -196,7 +319,7 @@ api.interceptors.response.use(
 
     const axiosError = error as AxiosError;
     const config = axiosError.config as TimedRequest | undefined;
-    const route = `${config?.method?.toUpperCase() ?? "?"} ${fullUrl(config)}`;
+    const route = `${config?.method?.toUpperCase() ?? "?"} ${config?.url ?? "?"}`;
     const status = axiosError.response?.status;
     const body = axiosError.response?.data;
 
@@ -227,11 +350,32 @@ api.interceptors.response.use(
       message = extractMessage(body, "Something went wrong. Please try again.");
     }
 
-    // ← ✗ 422 POST https://dev.bhcjobs.com/api/job_seeker/register (188ms) [client] Please check…
+    // ← ✗ 422 POST /api/job_seeker/register (188ms)
+    //   Url:      https://dev.bhcjobs.com/api/job_seeker/register
+    //   Method:   POST
+    //   Status:   422
+    //   Duration: 188ms
+    //   Kind:     client
+    //   Message:  Please check the highlighted fields.
+    //   Errors:   { phone: ['The phone has already been taken.'] }
+    //   Body:     …
     logger.error(
-      `← ✗ ${status ?? axiosError.code ?? "no response"} ${route}` +
-        ` (${elapsedMs(config)}) [${kind}] ${message}`,
-      body ?? "",
+      ...logRows(
+        `← ✗ ${status ?? axiosError.code ?? "no response"} ${route} (${elapsedMs(config)})`,
+        [
+          ["Url", fullUrl(config)],
+          ["Method", config?.method?.toUpperCase()],
+          // `code` when there is no response at all: ECONNABORTED on a timeout,
+          // ERR_NETWORK when the request never left the device.
+          ["Status", status ?? axiosError.code ?? "no response"],
+          ["Duration", elapsedMs(config)],
+          ["Kind", kind],
+          ["Message", message],
+          ["Payload", config?.data ? readableBody(config.data) : undefined],
+          ["Errors", extractFieldErrors(body)],
+          ["Body", body],
+        ],
+      ),
     );
 
     return Promise.reject(

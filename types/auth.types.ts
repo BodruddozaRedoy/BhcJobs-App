@@ -24,6 +24,45 @@ export interface RegisterPayload {
 }
 
 /**
+ * Payload for `POST /api/job_seeker/phone_verify`.
+ *
+ * Both keys confirmed by probing: an empty body answers
+ * `{ "status": false, "error": { "phone": [...], "otp": [...] } }`, so these are the
+ * exact names the backend validates.
+ *
+ * `otp` is a string, not a number — a code with a leading zero must survive the
+ * round trip, and `0421` as a number is `421`.
+ */
+export interface PhoneVerifyPayload {
+  phone: string;
+  otp: string;
+}
+
+/**
+ * Body of a successful phone verification.
+ *
+ * Unverified in shape: confirming a real OTP needs a live phone number, so only the
+ * failure paths could be exercised. The flow relies on `status`, which the
+ * interceptor already checks, rather than on any field below.
+ *
+ * `token` is declared optimistically in case the backend signs the user in on
+ * verification — see `verifyPhone`, which uses it when present and otherwise sends
+ * the user to sign in.
+ */
+export interface PhoneVerifyResponse {
+  status?: boolean;
+  message?: string;
+  token?: string;
+  access_token?: string;
+  user?: JobSeeker;
+  data?: {
+    token?: string;
+    access_token?: string;
+    user?: JobSeeker;
+  };
+}
+
+/**
  * Body of a successful registration.
  *
  * Unverified in shape: completing a real registration would have sent an OTP to a

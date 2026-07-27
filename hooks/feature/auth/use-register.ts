@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 
 import { useToast } from "@/context/ToastProvider";
 import { applyFieldErrors } from "@/lib/forms/apply-field-errors";
+import { logger } from "@/lib/logger";
 import { registerSchema, type RegisterFormValues } from "@/lib/validation/auth.schema";
 import { register } from "@/services/api/auth.api";
 import { isApiError } from "@/services/api/types";
@@ -62,11 +63,26 @@ export function useRegister() {
 
         await register(payload);
 
-        toast.success("Account created. Check your phone for the OTP.");
+        logger.success("[register] account created; navigating to OTP verification", {
+          phone: values.phone,
+        });
 
-        // Registration is only half the flow — the OTP screen is not built yet, so
-        // the user is sent to sign-in rather than left on a submitted form.
-        router.replace("/(auth)/login");
+        // Navigation before the toast, deliberately. Both are in the same `try`, so
+        // anything thrown while raising the toast would skip the navigation entirely
+        // and land in the catch below — stranding the user on a submitted form with
+        // an error message, for an account that was in fact created. The redirect is
+        // the critical path; the toast is decoration.
+        //
+        // Registration is only half the flow: the account stays inactive until the
+        // OTP is confirmed, so the user goes straight to that screen. `replace`, not
+        // `push` — going "back" to a submitted form would only produce a
+        // phone-already-taken error.
+        //
+        // The phone number travels as a param because `phone_verify` needs it and
+        // the OTP screen has no other way to know it.
+        router.replace({ pathname: "/(auth)/verify-otp", params: { phone: values.phone } });
+
+        toast.success("Account created. Check your phone for the OTP.");
       } catch (error) {
         if (!isApiError(error)) {
           toast.error("Something went wrong. Please try again.");

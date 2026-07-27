@@ -16,6 +16,18 @@ export const thousands = (value: number): string =>
 export const money = (currency: string, amount: number): string =>
   `${currency} ${thousands(amount)}`;
 
+/**
+ * `292` → `"04:52"`. Clamped at zero, so a countdown that overshoots renders
+ * `"00:00"` rather than a negative time.
+ */
+export const mmss = (totalSeconds: number): string => {
+  const safe = Math.max(0, Math.floor(totalSeconds));
+  const minutes = Math.floor(safe / 60);
+  const seconds = safe % 60;
+
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+};
+
 const MONTHS = [
   "January",
   "February",
