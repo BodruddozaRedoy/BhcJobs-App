@@ -63,16 +63,21 @@ export const Gradients = {
     dark: ["#4b5563", "#1f2937", "#111827"],
   },
   /**
-   * Left-to-right blue behind the home banner. Stays blue in dark mode rather
-   * than desaturating with the rest of the UI: it is the one deliberately branded
-   * surface in the app, and the white headline needs the same contrast in both
-   * schemes. Dark simply drops two rungs down the blue ramp.
+   * Left-to-right wash behind the home banner.
+   *
+   * Dark mode desaturates onto the same `gray` ramp as every other surface, rather
+   * than staying blue — the banner reads as part of the page, not as a lit panel
+   * sitting on it.
+   *
+   * It stops at gray-800 rather than continuing to gray-900 on purpose: the wave
+   * below is filled with the page background (gray-900), so a gradient that reached
+   * the same value would make the wave vanish into it.
    */
   homeBanner: {
     /** blue-600 → blue-500 → blue-400. */
     light: ["#2563eb", "#3b82f6", "#60a5fa"],
-    /** blue-900 → blue-800 → blue-700. */
-    dark: ["#1e3a8a", "#1e40af", "#1d4ed8"],
+    /** gray-700 → gray-800. */
+    dark: ["#374151", "#1f2937"],
   },
 } as const satisfies Record<string, Record<"light" | "dark", GradientStops>>;
 

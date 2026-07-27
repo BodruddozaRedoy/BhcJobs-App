@@ -4,12 +4,12 @@ import { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
 import { BannerWave, WAVE_HEIGHT } from "@/components/module/home/BannerWave";
-import { Colors, Gradients } from "@/constants/colors";
-import { useTheme } from "@/context/ThemeProvider";
+import { Gradients } from "@/constants/colors";
+import { usePalette, useTheme } from "@/context/ThemeProvider";
 
 /**
- * Blue kept visible between the search field and the wave's crest. Without it the
- * field sits right on the curve and the banner reads as cramped.
+ * Gradient kept visible between the search field and the wave's crest. Without it
+ * the field sits right on the curve and the banner reads as cramped.
  */
 const SEARCH_CLEARANCE = 48;
 
@@ -25,6 +25,7 @@ export interface HomeBannerProps {
 export function HomeBanner({ onSearch }: HomeBannerProps) {
   const [query, setQuery] = useState("");
   const { isDark } = useTheme();
+  const palette = usePalette();
 
   const submit = () => {
     const trimmed = query.trim();
@@ -56,23 +57,24 @@ export function HomeBanner({ onSearch }: HomeBannerProps) {
           </Text>
 
           {/*
-            The pill stays white in dark mode. Everything else desaturates, but this
-            sits on the banner's blue in both schemes, so a dark field here would
-            read as a hole rather than as an input.
+            `selected-dark` (gray-600) in dark mode — one rung above the gradient
+            behind it, which is what keeps the field readable as a field now that the
+            banner is grey rather than blue.
           */}
-          <View className="mt-8 h-14 flex-row items-center rounded-full bg-white pl-5 pr-2">
+          <View className="mt-8 h-14 flex-row items-center rounded-full bg-white pl-5 pr-2 dark:bg-selected-dark">
             <TextInput
               value={query}
               onChangeText={setQuery}
               onSubmitEditing={submit}
               placeholder="Search Job"
-              // Hardcoded to the light palette on purpose — see the note above.
-              placeholderTextColor={Colors.light.textSecondary}
+              // A native prop with no class to attach a `dark:` variant to, so the
+              // value comes from the live palette.
+              placeholderTextColor={palette.textSecondary}
               returnKeyType="search"
               autoCapitalize="none"
               autoCorrect={false}
               accessibilityLabel="Search jobs"
-              className="flex-1 text-base text-black"
+              className="flex-1 text-base text-content dark:text-content-dark"
             />
 
             <Pressable
