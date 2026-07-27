@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 
-import { HomeBanner } from "@/components/module/home/HomeBanner";
 import { AppScreen } from "@/components/layout/AppScreen";
+import { HomeBanner } from "@/components/module/home/HomeBanner";
+import { PopularIndustries } from "@/components/module/home/PopularIndustries";
 
 export default function HomeScreen() {
   return (
@@ -11,6 +12,14 @@ export default function HomeScreen() {
     <AppScreen scroll padded={false} edges={[]}>
       <HomeBanner
         onSearch={(query) => router.push({ pathname: "/(tabs)/search", params: { q: query } })}
+      />
+
+      {/* Tapping an industry filters the jobs list; that screen does not read the
+          param yet, so the handler is wired but inert for now. */}
+      <PopularIndustries
+        onSelect={(industry) =>
+          router.push({ pathname: "/(tabs)/jobs", params: { industry: industry.id } })
+        }
       />
     </AppScreen>
   );

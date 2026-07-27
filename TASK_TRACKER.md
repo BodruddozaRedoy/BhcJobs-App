@@ -67,7 +67,7 @@ https://dev.bhcjobs.com/storage
 
 ## GET APIs
 
-- [ ] Industry API
+- [x] Industry API
 - [ ] Jobs API
 - [ ] Companies API
 
@@ -103,13 +103,13 @@ POST /api/job_seeker/login
 
 ## Popular Industries
 
-- [ ] Fetch industries
-- [ ] Loading state
-- [ ] Empty state
-- [ ] Error state
-- [ ] Industry cards
-- [ ] Industry image
-- [ ] Industry name
+- [x] Fetch industries
+- [x] Loading state
+- [x] Empty state
+- [x] Error state
+- [x] Industry cards
+- [x] Industry image
+- [x] Industry name
 
 ---
 
