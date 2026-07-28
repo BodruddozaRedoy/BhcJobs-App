@@ -283,12 +283,7 @@ api.interceptors.response.use(
       );
     }
 
-    // ← 200 GET /api/job/get (312ms)
-    //   Url:      https://dev.bhcjobs.com/api/job/get
-    //   Method:   GET
-    //   Status:   200
-    //   Duration: 312ms
-    //   Body:     { status: true, message: 'Jobs fetched successfully', data: [ … ] }
+    
     logger.success(
       ...logRows(`← ${response.status} ${route} (${duration})`, [
         ["Url", fullUrl(response.config)],
@@ -352,23 +347,12 @@ api.interceptors.response.use(
       message = extractMessage(body, "Something went wrong. Please try again.");
     }
 
-    // ← ✗ 422 POST /api/job_seeker/register (188ms)
-    //   Url:      https://dev.bhcjobs.com/api/job_seeker/register
-    //   Method:   POST
-    //   Status:   422
-    //   Duration: 188ms
-    //   Kind:     client
-    //   Message:  Please check the highlighted fields.
-    //   Errors:   { phone: ['The phone has already been taken.'] }
-    //   Body:     …
     logger.error(
       ...logRows(
         `← ✗ ${status ?? axiosError.code ?? "no response"} ${route} (${elapsedMs(config)})`,
         [
           ["Url", fullUrl(config)],
           ["Method", config?.method?.toUpperCase()],
-          // `code` when there is no response at all: ECONNABORTED on a timeout,
-          // ERR_NETWORK when the request never left the device.
           ["Status", status ?? axiosError.code ?? "no response"],
           ["Duration", elapsedMs(config)],
           ["Kind", kind],

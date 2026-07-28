@@ -9,9 +9,9 @@ import type {
   Session,
 } from "@/types/auth.types";
 
-import { post } from "./client";
-import { ENDPOINTS } from "./endpoints";
-import { ApiError } from "./types";
+import { post } from "../client";
+import { ENDPOINTS } from "../endpoints";
+import { ApiError } from "../types";
 
 /**
  * Digs the bearer token out of a login response.

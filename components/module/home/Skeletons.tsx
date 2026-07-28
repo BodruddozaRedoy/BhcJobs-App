@@ -2,18 +2,6 @@ import { View } from "react-native";
 
 import { Skeleton } from "@/components/ui/Skeleton";
 
-/**
- * Placeholders for the three home sections, while their endpoints answer.
- *
- * Each one mirrors the card it stands in for — same `h-36`, same rounded border,
- * blocks roughly where the real text and images land. That is the whole point of a
- * skeleton over a spinner: it reserves the space the content will occupy, so the
- * page does not lurch when the data arrives.
- *
- * Counts are chosen to fill about the same height as the collapsed section rather
- * than to match its item count exactly — two rows is enough to read as "a grid is
- * coming", and more would just be a taller thing to throw away.
- */
 
 /** Cards in the two-column grid placeholders. Two rows. */
 const GRID_ROWS = 4;

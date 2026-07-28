@@ -1,5 +1,5 @@
 import { useAsyncList, type AsyncList } from "@/hooks/use-async-list";
-import { getCompanies } from "@/services/api/company.api";
+import { getCompanies } from "@/services/api/feature/company.api";
 import { queryKeys } from "@/services/api/query-keys";
 import type { Company } from "@/types/company.types";
 

@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthProvider";
 import { useToast } from "@/context/ToastProvider";
 import { applyFieldErrors } from "@/lib/forms/apply-field-errors";
 import { loginSchema, type LoginFormValues } from "@/lib/validation/auth.schema";
-import { login } from "@/services/api/auth.api";
+import { login } from "@/services/api/feature/auth.api";
 import { isApiError } from "@/services/api/types";
 
 /** Form fields the backend is allowed to attach errors to. */

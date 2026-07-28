@@ -37,15 +37,11 @@ export default function RegisterScreen() {
       scroll
       center
       keyboardAvoiding
-      // AppHeader owns the top inset; no tab bar below, so the bottom is ours.
       edges={["bottom"]}
       contentClassName="py-10"
     >
       <View
         style={{ width: cardWidth }}
-        // The light shadow tint would sit *lighter* than the dark surfaces behind
-        // it, reading as a glow rather than depth — hence the near-black in dark
-        // mode, at a higher opacity since a dark shadow needs more to register.
         className="rounded-2xl bg-white px-6 py-8 shadow-lg shadow-slate-300/60 dark:bg-element-dark dark:shadow-black/70"
       >
         <View className="mb-8 flex-row items-center justify-center">
@@ -110,8 +106,6 @@ export default function RegisterScreen() {
               required
               icon="document-text"
               placeholder="AB1234567"
-              // Upper-cases as the user types, so the field visibly matches the
-              // format in the hint rather than being silently fixed on submit.
               autoCapitalize="characters"
               autoCorrect={false}
               maxLength={9}
@@ -172,8 +166,6 @@ export default function RegisterScreen() {
               icon="mail"
               placeholder="Enter your email address"
               keyboardType="email-address"
-              // Autocapitalising an email address is the single most common cause of
-              // a "valid" address the server cannot match.
               autoCapitalize="none"
               autoComplete="email"
               textContentType="emailAddress"
@@ -248,8 +240,6 @@ export default function RegisterScreen() {
             >
               <Text className="text-sm text-content dark:text-content-dark">
                 By continuing, you agree to our{" "}
-                {/* Nested Text, so the links wrap inline with the sentence — a
-                    Pressable here would break out of the text flow. */}
                 <Text
                   className="font-semibold text-brand underline dark:text-brand-dark"
                   onPress={() => openBrowserAsync(TERMS_URL)}
@@ -276,7 +266,6 @@ export default function RegisterScreen() {
           <Text className="text-sm text-content dark:text-content-dark">
             Already have an account?{" "}
           </Text>
-          {/* asChild + Text: className on Link itself is dropped by NativeWind. */}
           <Link href="/(auth)/login" asChild>
             <Text className="text-sm font-semibold text-brand dark:text-brand-dark">Sign in</Text>
           </Link>

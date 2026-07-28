@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthProvider";
 import { useToast } from "@/context/ToastProvider";
 import { applyFieldErrors } from "@/lib/forms/apply-field-errors";
 import { otpSchema, type OtpFormValues } from "@/lib/validation/auth.schema";
-import { verifyPhone } from "@/services/api/auth.api";
+import { verifyPhone } from "@/services/api/feature/auth.api";
 import { isApiError } from "@/services/api/types";
 
 /**

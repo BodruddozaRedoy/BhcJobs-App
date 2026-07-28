@@ -35,15 +35,11 @@ export function HomeBanner({ onSearch }: HomeBannerProps) {
   };
 
   return (
-    // `overflow-hidden` clips the wave strips, which are three screens wide and
-    // slide sideways.
     <View className="overflow-hidden">
       <LinearGradient
         colors={isDark ? Gradients.homeBanner.dark : Gradients.homeBanner.light}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        // Reserves the wave's band so content can never sit under the crest, plus
-        // the clearance that keeps the search field off it.
         style={{ paddingBottom: WAVE_HEIGHT + SEARCH_CLEARANCE }}
       >
         <View className="px-6 pt-14">
@@ -56,19 +52,12 @@ export function HomeBanner({ onSearch }: HomeBannerProps) {
             with high-demand Saudi Jobs.
           </Text>
 
-          {/*
-            `selected-dark` (gray-600) in dark mode — one rung above the gradient
-            behind it, which is what keeps the field readable as a field now that the
-            banner is grey rather than blue.
-          */}
           <View className="mt-8 h-14 flex-row items-center rounded-full bg-white pl-5 pr-2 dark:bg-selected-dark">
             <TextInput
               value={query}
               onChangeText={setQuery}
               onSubmitEditing={submit}
               placeholder="Search Job"
-              // A native prop with no class to attach a `dark:` variant to, so the
-              // value comes from the live palette.
               placeholderTextColor={palette.textSecondary}
               returnKeyType="search"
               autoCapitalize="none"

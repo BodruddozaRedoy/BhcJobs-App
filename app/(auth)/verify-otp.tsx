@@ -9,26 +9,14 @@ import { OtpInput } from "@/components/ui/OtpInput";
 import { Brand } from "@/constants/colors";
 import { useVerifyOtp } from "@/hooks/feature/auth/use-verify-otp";
 import { useCountdown } from "@/hooks/use-countdown";
-import { mmss } from "@/lib/format";
+import { mmss } from "@/utils/format";
 import { OTP_LENGTH } from "@/lib/validation/auth.schema";
 
 /** Above this width the card stops growing and stays centred (tablets, landscape). */
 const MAX_CARD_WIDTH = 420;
 
-/**
- * How long the code is assumed to stay valid.
- *
- * Five minutes, matching the design. The register response carries no expiry, so this
- * countdown is a display convention rather than the truth — the backend decides, and
- * an expired code fails on submit with its own message. Which is why the Submit
- * button stays live after the timer runs out instead of being disabled on a guess.
- */
 const OTP_TTL_SECONDS = 5 * 60;
 
-/**
- * Card frame shared by the form and the missing-number fallback, so both sit in the
- * same place on screen.
- */
 function Card({ width, children }: { width: number; children: React.ReactNode }) {
   return (
     <View
@@ -83,7 +71,6 @@ export default function VerifyOtpScreen() {
       scroll
       center
       keyboardAvoiding
-      // AppHeader owns the top inset; no tab bar below, so the bottom is ours.
       edges={["bottom"]}
       contentClassName="py-10"
     >
@@ -98,8 +85,6 @@ export default function VerifyOtpScreen() {
 
         <Text className="mt-5 text-center text-sm leading-6 text-content dark:text-content-dark">
           We&apos;ve sent a {OTP_LENGTH}-digit OTP to{" "}
-          {/* The number is the one thing worth double-checking before typing a code,
-              so it is the one thing tinted. */}
           <Text className="font-semibold text-orange-500">{phone}</Text>
           {"\n"}
           Kindly enter it below to continue.
@@ -127,10 +112,6 @@ export default function VerifyOtpScreen() {
               disabled={isSubmitting}
               error={error?.message}
               autoFocus
-              // Submitting on the last digit saves a reach to the button, which is
-              // what makes an autofilled code feel instant. The digits are dropped
-              // rather than forwarded — `onSubmit` reads the value from form state,
-              // and its own parameter is a form event.
               onComplete={() => onSubmit()}
               containerClassName="mt-6"
             />
@@ -141,14 +122,6 @@ export default function VerifyOtpScreen() {
           <Text className="text-sm font-semibold text-content dark:text-content-dark">
             Didn&apos;t get the code?{" "}
           </Text>
-          {/*
-            Inert on purpose. There is no resend endpoint on the backend — probed
-            `resend_otp`, `otp_resend`, `send_otp`, `resend`, `phone_resend` and
-            `otp_send` under `/api/job_seeker/`, all 404. Rendered disabled rather
-            than omitted so the layout matches the design and the control is ready to
-            wire, and `disabled` rather than silently doing nothing so it does not
-            look tappable.
-          */}
           <Pressable disabled accessibilityRole="button" accessibilityState={{ disabled: true }}>
             <Text className="text-sm text-muted dark:text-muted-dark">Send again</Text>
           </Pressable>

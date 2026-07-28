@@ -1,7 +1,7 @@
 import type { Job } from "@/types/job.types";
 
-import { getData, type RequestOptions } from "./client";
-import { ENDPOINTS } from "./endpoints";
+import { getData, type RequestOptions } from "../client";
+import { ENDPOINTS } from "../endpoints";
 
 /**
  * Job list for the "Recommended Jobs" section.

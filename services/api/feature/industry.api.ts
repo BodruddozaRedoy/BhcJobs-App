@@ -1,7 +1,7 @@
 import type { Industry } from "@/types/industry.types";
 
-import { getData, type RequestOptions } from "./client";
-import { ENDPOINTS } from "./endpoints";
+import { getData, type RequestOptions } from "../client";
+import { ENDPOINTS } from "../endpoints";
 
 /**
  * Every active industry, for the "Popular Industries" section.

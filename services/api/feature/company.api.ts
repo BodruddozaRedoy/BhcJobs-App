@@ -1,7 +1,7 @@
 import type { Company } from "@/types/company.types";
 
-import { getData, type RequestOptions } from "./client";
-import { ENDPOINTS } from "./endpoints";
+import { getData, type RequestOptions } from "../client";
+import { ENDPOINTS } from "../endpoints";
 
 /**
  * Company list for the "Popular Companies" section.

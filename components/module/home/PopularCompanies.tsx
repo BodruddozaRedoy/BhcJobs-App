@@ -20,22 +20,10 @@ import type { Company } from "@/types/company.types";
 const COLLAPSED_COUNT = 4;
 
 export interface PopularCompaniesProps {
-  /**
-   * Owned by the screen rather than fetched here, so pull-to-refresh can drive all
-   * three sections at once and know when they have all finished.
-   */
   list: AsyncList<Company>;
   onSelect?: (company: Company) => void;
 }
 
-/**
- * "Popular Companies" — a two-column grid, collapsed to four cards.
- *
- * A wrapping `View` rather than a `FlatList`, for the same reason as the other home
- * sections: this sits inside the screen's vertical `ScrollView`, where a nested
- * vertical `FlatList` warns and loses virtualisation anyway, and the endpoint returns
- * the whole list unpaginated (five rows on the dev API).
- */
 export function PopularCompanies({ list, onSelect }: PopularCompaniesProps) {
   const { state, retry } = list;
   const [expanded, setExpanded] = useState(false);

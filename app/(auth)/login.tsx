@@ -27,17 +27,11 @@ export default function LoginScreen() {
       scroll
       center
       keyboardAvoiding
-      // AppHeader owns the top inset; no tab bar below, so the bottom is ours.
       edges={["bottom"]}
-      // Status bar sits over AppHeader now, not the gradient, and the header
-      // follows the theme — so `auto` (the default) is correct here.
       contentClassName="py-10"
     >
       <View
         style={{ width: cardWidth }}
-        // The light shadow tint would sit *lighter* than the dark surfaces behind
-        // it, reading as a glow rather than depth — hence the near-black in dark
-        // mode, at a higher opacity since a dark shadow needs more to register.
         className="rounded-2xl bg-white px-6 py-8 shadow-lg shadow-slate-300/60 dark:bg-element-dark dark:shadow-black/70"
       >
         {/* Header: badge + title, centred */}
@@ -88,7 +82,6 @@ export default function LoginScreen() {
               onChangeText={onChange}
               onBlur={onBlur}
               error={error?.message}
-              // Submitting from the keyboard is faster than reaching for the button.
               returnKeyType="go"
               onSubmitEditing={onSubmit}
               containerClassName="mb-3"
@@ -96,19 +89,12 @@ export default function LoginScreen() {
           )}
         />
 
-        {/*
-          Present in the reference design, but the task's API spec has no
-          password-reset endpoint — so it is rendered without a destination
-          rather than linking to a screen that cannot do anything yet.
-        */}
+        
         <Text className="mb-5 self-end text-sm font-semibold text-brand dark:text-brand-dark">
           Forgot Your Password?
         </Text>
 
-        {/*
-          Request-level failures (bad credentials, offline) surface as a toast from
-          `useLogin`, not inline — only per-field errors render next to their input.
-        */}
+       
         <Button label="SIGN IN" onPress={onSubmit} loading={isSubmitting} />
 
         <Divider label="OR" className="my-6" />

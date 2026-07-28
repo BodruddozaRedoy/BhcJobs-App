@@ -41,21 +41,14 @@ export const IndustryCard = memo(function IndustryCard({ industry, onPress }: In
           source={source}
           style={{ width: ICON_SIZE, height: ICON_SIZE }}
           contentFit="contain"
-          // Decorative: the card's own label already names the industry.
           accessibilityElementsHidden
-          // Cross-fade rather than a pop-in, which reads as jank across a grid of
-          // images that resolve at slightly different times.
           transition={200}
         />
       ) : (
-        // Keeps the text at the same height when an industry has no image, instead
-        // of letting that one card's content ride up.
         <View style={{ width: ICON_SIZE, height: ICON_SIZE }} />
       )}
 
       <Text
-        // Two lines, then ellipsis — long names like "Facilities Management" need
-        // the second line, and nothing needs a third.
         numberOfLines={2}
         className="mt-3 text-center text-sm font-bold text-content dark:text-content-dark"
       >

@@ -7,7 +7,7 @@ import { useToast } from "@/context/ToastProvider";
 import { applyFieldErrors } from "@/lib/forms/apply-field-errors";
 import { logger } from "@/lib/logger";
 import { registerSchema, type RegisterFormValues } from "@/lib/validation/auth.schema";
-import { register } from "@/services/api/auth.api";
+import { register } from "@/services/api/feature/auth.api";
 import { isApiError } from "@/services/api/types";
 
 /**

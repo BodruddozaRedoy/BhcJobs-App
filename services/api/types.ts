@@ -53,14 +53,6 @@ export class ApiError extends Error {
 /** Narrowing helper, since `catch` binds `unknown` under `strict`. */
 export const isApiError = (error: unknown): error is ApiError => error instanceof ApiError;
 
-/**
- * Envelope the BHC Jobs backend wraps its payloads in, verified against the dev
- * API — note the flag is `status`, not `success`:
- *
- *   { "status": true, "message": "Industries fetched successfully", "data": [...] }
- *
- * `data` is generic because each endpoint returns a different collection.
- */
 export interface ApiResponse<T> {
   status?: boolean;
   message?: string;

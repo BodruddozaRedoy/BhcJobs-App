@@ -22,19 +22,6 @@ export interface PopularIndustriesProps {
   onSelect?: (industry: Industry) => void;
 }
 
-/**
- * "Popular Industries" — a two-column grid, collapsed to eight cards.
- *
- * Laid out with a wrapping `View`, not a `FlatList`. The home screen is already one
- * vertical `ScrollView`, and a vertical `FlatList` inside it both warns and silently
- * loses virtualisation — given unbounded height it renders every row anyway. With a
- * list this size (ten rows on the dev API, and the endpoint takes no pagination)
- * there is nothing to virtualise, so the list machinery would be cost without
- * benefit.
- *
- * Cards are `w-[48%]` inside `justify-between`, which spaces the columns without a
- * gap value that would have to be subtracted from the widths by hand.
- */
 export function PopularIndustries({ list, onSelect }: PopularIndustriesProps) {
   const { state, retry } = list;
   const [expanded, setExpanded] = useState(false);

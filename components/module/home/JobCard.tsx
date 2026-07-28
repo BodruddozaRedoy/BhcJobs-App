@@ -5,8 +5,8 @@ import { Pressable, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
 import { Brand } from "@/constants/colors";
-import { approxBdt, approxBdtRange } from "@/lib/currency";
-import { isoDateToLong, money, thousands } from "@/lib/format";
+import { approxBdt, approxBdtRange } from "@/utils/currency";
+import { isoDateToLong, money, thousands } from "@/utils/format";
 import { companyImageUrl } from "@/lib/media";
 import type { Job } from "@/types/job.types";
 
@@ -16,21 +16,10 @@ export interface JobCardProps {
   job: Job;
   onView?: (job: Job) => void;
   onApply?: (job: Job) => void;
-  /** Omit to render the star as a static mark rather than a control. */
   onToggleSave?: (job: Job) => void;
   saved?: boolean;
 }
 
-/**
- * Salary as one line, e.g. `"Salary: SAR 1,500 – 1,800 (BDT 49,500 – 59,400 approx.)"`.
- *
- * `max_salary` is null on roughly half the dev rows, and equal to the minimum on
- * some others — both cases render as a single figure rather than as `"1,200 – 1,200"`
- * or a dangling dash.
- *
- * Returns `null` when there is no figure at all, so the caller drops the line
- * instead of printing `"Salary: SAR"`.
- */
 const salaryLine = (job: Job): string | null => {
   const { min_salary: min, max_salary: max, currency } = job;
   if (min === null) return null;
@@ -96,8 +85,6 @@ export const JobCard = memo(function JobCard({
 
   return (
     <View className="rounded-2xl border border-blue-100 bg-white p-4 dark:border-gray-700 dark:bg-element-dark">
-      {/* Title centred, star pinned right — so the title stays optically centred in
-          the card rather than being pushed off by the star's width. */}
       <View className="flex-row items-start">
         <Text
           numberOfLines={2}

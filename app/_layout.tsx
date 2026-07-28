@@ -11,35 +11,12 @@ import { queryClient } from "@/services/query-client";
 
 import "../global.css";
 
-/**
- * Root providers.
- *
- * Order matters: `ThemeProvider` is outermost so the colour scheme is applied
- * before anything renders, and `SafeAreaProvider` must wrap both — `AppHeader` and
- * `AppScreen` call `useSafeAreaInsets`, which reads 0 everywhere without it.
- *
- * `GestureHandlerRootView` has to be the outermost view (with an inline
- * `flex: 1`, since it renders before NativeWind's interop applies) or swipe
- * gestures go dead on Android.
- *
- * `KeyboardProvider` installs the native keyboard-frame listeners that
- * `AppScreen`'s keyboard handling reads. It has to be mounted once at the root —
- * without it those components silently do nothing.
- *
- * `QueryClientProvider` wraps `AuthProvider` because the auth mutations run inside
- * it, and sits above the navigator so the cache outlives any single screen — which
- * is what makes returning to the home tab paint from cache instead of refetching.
- */
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider>
         <SafeAreaProvider>
           <ThemeProvider>
-            {/*
-              Outside AuthProvider, so auth events (a failed session restore, a
-              sign-out) can raise a toast too.
-            */}
             <ToastProvider>
               <QueryClientProvider client={queryClient}>
                 <AuthProvider>
